@@ -2,852 +2,549 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Awaaz Bill — Voice Billing App</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Awaaz Bill — Voice Billing</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#1a1a2e;--bg2:#16213e;--bg3:#0f3460;--accent:#f5a623;--accent2:#e94560;--text:#f0e6d3;--text2:#a8a0b0;--green:#2ecc71;--red:#e74c3c;--white:#fff;--shadow:0 4px 20px rgba(0,0,0,0.4)}
+html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 
-:root {
-  --bg: #1a1a2e;
-  --bg-card: #16213e;
-  --bg-surface: #0f3460;
-  --accent: #f5a623;
-  --accent-dim: #c4841a;
-  --text: #f0e6d3;
-  --text-dim: #8a8a9a;
-  --success: #2ecc71;
-  --danger: #e74c3c;
-  --white: #ffffff;
-}
+/* API Key Modal */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--bg2);border-radius:16px;padding:32px;max-width:440px;width:100%;box-shadow:var(--shadow);border:1px solid rgba(245,166,35,0.2)}
+.modal h2{color:var(--accent);font-size:22px;margin-bottom:8px}
+.modal p{color:var(--text2);font-size:14px;margin-bottom:20px;line-height:1.5}
+.modal input{width:100%;padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:var(--bg);color:var(--text);font-size:16px;margin-bottom:12px}
+.modal input:focus{outline:none;border-color:var(--accent)}
+.modal .warn{font-size:12px;color:var(--accent);margin-bottom:16px;display:block}
+.modal button{width:100%;padding:14px;border:none;border-radius:10px;background:var(--accent);color:#000;font-size:16px;font-weight:700;cursor:pointer}
+.modal button:active{transform:scale(0.98)}
 
-html, body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-  -webkit-tap-highlight-color: transparent;
-}
+/* Top Bar */
+.topbar{background:var(--bg2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);position:sticky;top:0;z-index:100}
+.topbar .shop-info{flex:1;min-width:0}
+.topbar .shop-name{font-size:18px;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .bill-meta{font-size:13px;color:var(--text2);margin-top:2px}
+.topbar .actions{display:flex;gap:8px;flex-shrink:0}
+.topbar .actions button{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:10px}
+.topbar .actions button:hover{background:rgba(255,255,255,0.05)}
 
-/* ===== API KEY MODAL ===== */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.85);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 9999;
-  padding: 20px;
-}
-.modal-overlay.hidden { display: none; }
-.modal-box {
-  background: var(--bg-card);
-  border: 1px solid var(--bg-surface);
-  border-radius: 16px;
-  padding: 32px 28px;
-  max-width: 420px;
-  width: 100%;
-  text-align: center;
-}
-.modal-box h2 { font-size: 22px; margin-bottom: 8px; color: var(--accent); }
-.modal-box p { font-size: 14px; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5; }
-.modal-box input {
-  width: 100%;
-  padding: 14px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--bg-surface);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 15px;
-  margin-bottom: 16px;
-  outline: none;
-}
-.modal-box input:focus { border-color: var(--accent); }
-.modal-box .warning {
-  font-size: 12px;
-  color: var(--danger);
-  margin-bottom: 16px;
-  line-height: 1.4;
-}
-.modal-box button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 10px;
-  border: none;
-  background: var(--accent);
-  color: #000;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.modal-box button:active { background: var(--accent-dim); }
+/* Main Content */
+.main{padding:12px 16px 200px;max-width:600px;margin:0 auto;width:100%}
 
-/* ===== TOP BAR ===== */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--bg-surface);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.topbar-left h1 {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: -0.3px;
-}
-.topbar-left .bill-meta {
-  font-size: 13px;
-  color: var(--text-dim);
-  margin-top: 2px;
-}
-.topbar-right {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-.icon-btn {
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  border: none;
-  background: var(--bg-surface);
-  color: var(--text);
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-.icon-btn:active { opacity: 0.7; }
-.offline-badge {
-  position: fixed;
-  top: 60px;
-  right: 12px;
-  background: var(--danger);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 8px;
-  z-index: 200;
-  display: none;
-}
-.offline-badge.visible { display: block; }
+/* Status Badges */
+.status-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600}
+.badge-offline{background:rgba(231,76,60,0.2);color:var(--red)}
+.badge-online{background:rgba(46,204,113,0.15);color:var(--green)}
+.badge-listening{background:rgba(233,69,96,0.2);color:var(--accent2);animation:pulse-badge 1s infinite}
+@keyframes pulse-badge{0%,100%{opacity:1}50%{opacity:0.5}}
 
-/* ===== ABOUT TOOLTIP ===== */
-.about-tooltip {
-  position: absolute;
-  top: 50px;
-  right: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--bg-surface);
-  border-radius: 12px;
-  padding: 14px 16px;
-  width: 260px;
-  font-size: 13px;
-  color: var(--text-dim);
-  line-height: 1.5;
-  z-index: 300;
-  display: none;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
-.about-tooltip.visible { display: block; }
+/* Transcript Bubble */
+.transcript-area{margin-bottom:16px;min-height:0}
+.transcript-bubble{background:var(--bg2);border-radius:12px;padding:12px 16px;font-size:15px;color:var(--text);border-left:3px solid var(--accent);display:none;animation:fadeIn 0.2s ease}
+.transcript-bubble.visible{display:block}
+.transcript-bubble .label{font-size:11px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 
-/* ===== BILL AREA ===== */
-.bill-area {
-  flex: 1;
-  padding: 14px 16px 200px;
-  max-width: 600px;
-  margin: 0 auto;
-  width: 100%;
-}
-.bill-empty {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-dim);
-  font-size: 16px;
-  line-height: 1.6;
-}
-.bill-empty .emoji { font-size: 40px; margin-bottom: 12px; }
+/* AI Message */
+.ai-message{background:rgba(245,166,35,0.08);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--accent);margin-bottom:16px;display:none;border:1px solid rgba(245,166,35,0.15)}
+.ai-message.visible{display:block}
 
-/* ===== ITEM ROW ===== */
-.item-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 8px;
-  padding: 12px 14px;
-  background: var(--bg-card);
-  border-radius: 10px;
-  margin-bottom: 8px;
-  align-items: center;
-  transition: background 0.3s;
-}
-.item-row.highlight {
-  animation: highlightPulse 1.5s ease-out;
-}
-@keyframes highlightPulse {
-  0% { background: #f5a62355; }
-  100% { background: var(--bg-card); }
-}
-.item-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
-}
-.item-detail {
-  font-size: 13px;
-  color: var(--text-dim);
-  margin-top: 2px;
-}
-.item-qty {
-  font-size: 14px;
-  color: var(--text-dim);
-  text-align: right;
-  white-space: nowrap;
-}
-.item-total {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--accent);
-  text-align: right;
-  min-width: 60px;
-  white-space: nowrap;
+/* Bill Table */
+.bill-section h3{font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px dashed rgba(255,255,255,0.1)}
+.bill-items{list-style:none}
+.bill-items li{display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:16px;align-items:center;transition:background 0.3s}
+.bill-items li.highlight{background:rgba(245,166,35,0.12);border-radius:8px;padding:10px 8px;margin:0 -8px}
+.bill-items li .item-name{font-weight:600;color:var(--text)}
+.bill-items li .item-name small{font-weight:400;color:var(--text2);font-size:13px;display:block}
+.bill-items li .item-qty{color:var(--text2);font-size:14px;text-align:right;white-space:nowrap}
+.bill-items li .item-total{color:var(--accent);font-weight:700;text-align:right;white-space:nowrap;min-width:60px}
+.bill-empty{text-align:center;padding:40px 20px;color:var(--text2);font-size:16px}
+.bill-empty .icon{font-size:48px;margin-bottom:12px;display:block}
+
+/* Totals */
+.totals{margin-top:16px;padding-top:12px;border-top:2px solid rgba(245,166,35,0.3)}
+.total-row{display:flex;justify-content:space-between;font-size:18px;padding:4px 0}
+.total-row.grand{font-size:22px;font-weight:800;color:var(--accent);margin-top:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1)}
+.total-row .label{color:var(--text2)}
+
+/* Bottom Bar */
+.bottombar{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--bg) 80%,transparent);padding:12px 16px 20px;z-index:100}
+.bottom-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:12px}
+.btn{border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform 0.1s,opacity 0.2s}
+.btn:active{transform:scale(0.95)}
+.btn-secondary{background:var(--bg2);color:var(--text2);padding:14px 18px;min-width:48px;min-height:48px;border:1px solid rgba(255,255,255,0.08)}
+.btn-print{background:var(--green);color:#000;padding:14px 18px;min-height:48px}
+.btn-mic{width:72px;height:72px;border-radius:50%;background:var(--green);color:#fff;font-size:28px;box-shadow:0 4px 24px rgba(46,204,113,0.4);position:relative}
+.btn-mic.recording{background:var(--accent2);animation:pulse-mic 1s infinite;box-shadow:0 4px 24px rgba(233,69,96,0.5)}
+@keyframes pulse-mic{0%,100%{box-shadow:0 4px 24px rgba(233,69,96,0.5)}50%{box-shadow:0 4px 40px rgba(233,69,96,0.8)}}
+.btn-mic .ripple{position:absolute;inset:-8px;border-radius:50%;border:2px solid var(--accent2);animation:ripple-out 1.5s infinite;pointer-events:none;display:none}
+.btn-mic.recording .ripple{display:block}
+@keyframes ripple-out{0%{transform:scale(1);opacity:0.6}100%{transform:scale(1.6);opacity:0}}
+
+/* Text Input Fallback */
+.text-fallback{max-width:600px;margin:0 auto;padding:0 16px;position:fixed;bottom:110px;left:0;right:0;z-index:99}
+.text-fallback form{display:flex;gap:8px}
+.text-fallback input{flex:1;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:var(--bg2);color:var(--text);font-size:15px}
+.text-fallback input:focus{outline:none;border-color:var(--accent)}
+.text-fallback button{padding:12px 16px;border:none;border-radius:12px;background:var(--accent);color:#000;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap}
+
+/* Settings Panel */
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;opacity:0;transition:opacity 0.3s}
+.settings-overlay.open{display:block;opacity:1}
+.settings-panel{position:fixed;top:0;right:-100%;width:min(360px,90%);height:100%;background:var(--bg2);z-index:501;padding:24px;overflow-y:auto;transition:right 0.3s ease}
+.settings-panel.open{right:0}
+.settings-panel h2{color:var(--accent);font-size:20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+.settings-panel h2 button{background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer}
+.settings-panel label{display:block;font-size:13px;color:var(--text2);margin-bottom:4px;margin-top:16px;text-transform:uppercase;letter-spacing:0.5px}
+.settings-panel input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:var(--bg);color:var(--text);font-size:15px}
+.settings-panel input:focus{outline:none;border-color:var(--accent)}
+.settings-panel .save-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--accent);color:#000;font-size:16px;font-weight:700;cursor:pointer;margin-top:24px}
+.settings-panel .api-section{margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1)}
+.settings-panel .danger-btn{background:var(--red);color:#fff;margin-top:8px}
+
+/* About Tooltip */
+.about-tooltip{position:fixed;bottom:200px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid rgba(245,166,35,0.2);border-radius:12px;padding:16px 20px;max-width:340px;width:90%;font-size:13px;color:var(--text2);line-height:1.6;z-index:200;display:none;box-shadow:var(--shadow)}
+.about-tooltip.visible{display:block}
+.about-tooltip strong{color:var(--accent)}
+
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--bg3);color:var(--text);padding:12px 20px;border-radius:12px;font-size:14px;z-index:600;transition:transform 0.3s ease;box-shadow:var(--shadow);max-width:90%;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{border:1px solid var(--red)}
+.toast.success{border:1px solid var(--green)}
+
+/* Receipt Print Styles */
+.receipt-print{display:none}
+
+@media print{
+  *{margin:0;padding:0}
+  body{background:#fff!important;color:#000!important;font-family:'Courier New',monospace!important;font-size:12px!important}
+  .topbar,.bottombar,.text-fallback,.settings-overlay,.settings-panel,.modal-overlay,.toast,.about-tooltip,.status-bar,.transcript-area,.ai-message,.no-print{display:none!important}
+  .main{display:none!important}
+  .receipt-print{display:block!important;width:80mm;margin:0 auto;padding:4mm 2mm;font-size:12px;line-height:1.4}
+  .receipt-print .r-shop{text-align:center;font-weight:700;font-size:14px;margin-bottom:2px}
+  .receipt-print .r-addr{text-align:center;font-size:10px;margin-bottom:1px}
+  .receipt-print .r-phone{text-align:center;font-size:10px}
+  .receipt-print .r-gst{text-align:center;font-size:10px;margin-bottom:4px}
+  .receipt-print .r-line{border-top:1px dashed #000;margin:4px 0}
+  .receipt-print .r-meta{font-size:11px;margin:2px 0}
+  .receipt-print .r-header{display:flex;justify-content:space-between;font-size:10px;font-weight:700;text-transform:uppercase;margin:4px 0;padding-bottom:2px;border-bottom:1px solid #000}
+  .receipt-print .r-item{display:flex;justify-content:space-between;font-size:11px;padding:1px 0}
+  .receipt-print .r-item .r-item-left{flex:1}
+  .receipt-print .r-item .r-item-detail{font-size:10px;color:#444}
+  .receipt-print .r-totals{text-align:right;margin-top:4px;padding-top:4px;border-top:1px dashed #000}
+  .receipt-print .r-totals .r-grand{font-size:14px;font-weight:700}
+  .receipt-print .r-footer{text-align:center;margin-top:6px;font-size:10px;padding-top:4px;border-top:1px dashed #000}
+  @page{size:80mm auto;margin:0}
 }
 
-/* ===== TOTALS ===== */
-.totals-bar {
-  margin-top: 12px;
-  padding: 14px;
-  background: var(--bg-surface);
-  border-radius: 12px;
-}
-.totals-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px;
-  margin-bottom: 6px;
-  color: var(--text-dim);
-}
-.totals-row.grand {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--accent);
-  margin-bottom: 0;
-  padding-top: 8px;
-  border-top: 1px dashed rgba(255,255,255,0.1);
-  margin-top: 6px;
-}
-
-/* ===== VOICE BUBBLE ===== */
-.voice-bubble {
-  margin: 12px 0;
-  padding: 12px 16px;
-  background: var(--bg-surface);
-  border-radius: 14px;
-  font-size: 15px;
-  color: var(--text);
-  line-height: 1.5;
-  display: none;
-  position: relative;
-}
-.voice-bubble.visible { display: block; }
-.voice-bubble .label {
-  font-size: 11px;
-  color: var(--accent);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-/* ===== AI MESSAGE ===== */
-.ai-message {
-  padding: 10px 16px;
-  background: rgba(245,166,35,0.1);
-  border-left: 3px solid var(--accent);
-  border-radius: 0 10px 10px 0;
-  margin: 8px 0;
-  font-size: 14px;
-  color: var(--text);
-  display: none;
-}
-.ai-message.visible { display: block; }
-
-/* ===== BOTTOM BAR ===== */
-.bottombar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-card);
-  border-top: 1px solid var(--bg-surface);
-  padding: 12px 16px 20px;
-  z-index: 100;
-}
-.bottom-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-.action-btn {
-  padding: 12px 18px;
-  border-radius: 12px;
-  border: 1px solid var(--bg-surface);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  min-height: 48px;
-}
-.action-btn:active { opacity: 0.7; }
-.action-btn.print-btn {
-  background: var(--success);
-  color: #000;
-  border-color: var(--success);
-}
-
-/* ===== MIC BUTTON ===== */
-.mic-btn {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  border: 3px solid var(--success);
-  background: rgba(46,204,113,0.15);
-  color: var(--success);
-  font-size: 28px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.2s;
-  position: relative;
-}
-.mic-btn.recording {
-  border-color: var(--danger);
-  background: rgba(231,76,60,0.2);
-  color: var(--danger);
-  animation: micPulse 1s ease-in-out infinite;
-}
-@keyframes micPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0.4); }
-  50% { box-shadow: 0 0 0 14px rgba(231,76,60,0); }
-}
-
-/* ===== TEXT FALLBACK ===== */
-.text-fallback {
-  display: flex;
-  gap: 8px;
-  max-width: 600px;
-  margin: 8px auto 0;
-}
-.text-fallback input {
-  flex: 1;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--bg-surface);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
-  outline: none;
-  min-height: 48px;
-}
-.text-fallback input:focus { border-color: var(--accent); }
-.text-fallback button {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
-  background: var(--accent);
-  color: #000;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  min-height: 48px;
-}
-
-/* ===== SETTINGS PANEL ===== */
-.settings-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 500;
-  display: none;
-}
-.settings-overlay.visible { display: block; }
-.settings-panel {
-  position: fixed;
-  top: 0; right: -340px; bottom: 0;
-  width: 320px;
-  max-width: 90vw;
-  background: var(--bg-card);
-  z-index: 501;
-  padding: 24px 20px;
-  overflow-y: auto;
-  transition: right 0.3s ease;
-}
-.settings-panel.visible { right: 0; }
-.settings-panel h2 {
-  font-size: 20px;
-  color: var(--accent);
-  margin-bottom: 20px;
-}
-.settings-panel label {
-  display: block;
-  font-size: 13px;
-  color: var(--text-dim);
-  margin-bottom: 6px;
-  margin-top: 14px;
-}
-.settings-panel input {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--bg-surface);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 15px;
-  outline: none;
-}
-.settings-panel input:focus { border-color: var(--accent); }
-.settings-panel .save-btn {
-  margin-top: 24px;
-  width: 100%;
-  padding: 14px;
-  border-radius: 10px;
-  border: none;
-  background: var(--accent);
-  color: #000;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.settings-panel .api-btn {
-  margin-top: 10px;
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid var(--danger);
-  background: transparent;
-  color: var(--danger);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* ===== TOAST ===== */
-.toast {
-  position: fixed;
-  bottom: 180px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--bg-surface);
-  color: var(--text);
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-size: 14px;
-  z-index: 999;
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
-  max-width: 90vw;
-  text-align: center;
-}
-.toast.visible { opacity: 1; }
-
-/* ===== RECEIPT (Print) ===== */
-.receipt {
-  display: none;
-}
-
-@media print {
-  body * { visibility: hidden; }
-  .receipt, .receipt * { visibility: visible; }
-  .receipt {
-    display: block;
-    position: absolute;
-    left: 0; top: 0;
-    width: 80mm;
-    margin: 0;
-    padding: 4mm;
-    background: #fff;
-    color: #000;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 12px;
-    line-height: 1.4;
-  }
-  .receipt .r-center { text-align: center; }
-  .receipt .r-shop { font-size: 16px; font-weight: bold; }
-  .receipt .r-meta { font-size: 11px; }
-  .receipt .r-divider {
-    border: none;
-    border-top: 1px dashed #000;
-    margin: 4px 0;
-  }
-  .receipt table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-  }
-  .receipt th {
-    text-align: left;
-    border-bottom: 1px solid #000;
-    padding: 2px 0;
-    font-size: 10px;
-  }
-  .receipt th:nth-child(2),
-  .receipt th:nth-child(3),
-  .receipt th:nth-child(4) { text-align: right; }
-  .receipt td { padding: 2px 0; }
-  .receipt td:nth-child(2),
-  .receipt td:nth-child(3),
-  .receipt td:nth-child(4) { text-align: right; }
-  .receipt .r-total-section { text-align: right; margin-top: 4px; }
-  .receipt .r-grand { font-size: 14px; font-weight: bold; }
-  .receipt .r-footer { text-align: center; font-size: 11px; margin-top: 6px; }
-  .no-print { display: none !important; }
-}
-
-/* ===== LOADING SPINNER ===== */
-.loading-dot {
-  display: inline-block;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  margin: 0 2px;
-  animation: dotBounce 1.2s infinite;
-}
-.loading-dot:nth-child(2) { animation-delay: 0.2s; }
-.loading-dot:nth-child(3) { animation-delay: 0.4s; }
-@keyframes dotBounce {
-  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
-  40% { opacity: 1; transform: scale(1.2); }
-}
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
 </style>
 </head>
 <body>
 
-<!-- API KEY MODAL -->
+<!-- API Key Modal -->
 <div class="modal-overlay" id="apiModal">
-  <div class="modal-box">
-    <h2>Awaaz Bill</h2>
-    <p>Voice se bill banayein. Apna Claude API key enter karein.</p>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off">
-    <div class="warning">Demo use only. Key aapke browser mein store hogi — server pe nahi jayegi.</div>
-    <button id="apiKeySave">Shuru Karein</button>
+  <div class="modal">
+    <h2>Awaaz Bill Setup</h2>
+    <p>Voice billing ke liye Claude API key chahiye. Apna Anthropic API key neeche daalein.</p>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." autocomplete="off">
+    <span class="warn">Key sirf aapke browser mein save hogi. Demo use ke liye hai.</span>
+    <button onclick="saveApiKey()">Shuru Karein</button>
   </div>
 </div>
 
-<!-- SETTINGS OVERLAY -->
-<div class="settings-overlay" id="settingsOverlay"></div>
+<!-- Top Bar -->
+<div class="topbar no-print">
+  <div class="shop-info">
+    <div class="shop-name" id="topShopName">Rama General Store</div>
+    <div class="bill-meta">Bill #<span id="topBillNo">001</span> &middot; <span id="topDate"></span></div>
+  </div>
+  <div class="actions">
+    <button onclick="toggleAbout()" title="About">&#9432;</button>
+    <button onclick="openSettings()" title="Settings">&#9881;</button>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main no-print" id="mainContent">
+  <div class="status-bar" id="statusBar">
+    <span class="badge badge-online" id="badgeOnline">Online</span>
+  </div>
+
+  <div class="transcript-area">
+    <div class="transcript-bubble" id="transcriptBubble">
+      <div class="label">Aapne bola:</div>
+      <div id="transcriptText"></div>
+    </div>
+  </div>
+
+  <div class="ai-message" id="aiMessage"></div>
+
+  <div class="bill-section">
+    <h3>Bill Items</h3>
+    <ul class="bill-items" id="billItemsList"></ul>
+    <div class="bill-empty" id="billEmpty" style="display:none">
+      <span class="icon">&#128722;</span>
+      Mic dabayein aur item bolein<br><small>Example: "Sugar ek kilo do sau rupaye"</small>
+    </div>
+  </div>
+
+  <div class="totals" id="totalsSection" style="display:none">
+    <div class="total-row">
+      <span class="label">Subtotal</span>
+      <span id="subtotalDisplay">&#8377;0.00</span>
+    </div>
+    <div class="total-row grand">
+      <span class="label">Total</span>
+      <span id="grandTotalDisplay">&#8377;0.00</span>
+    </div>
+  </div>
+</div>
+
+<!-- About Tooltip -->
+<div class="about-tooltip" id="aboutTooltip">
+  <strong>Awaaz Bill MVP</strong><br>
+  Voice billing for Indian kirana stores. Speak in Hindi, English or Hinglish to add items.<br><br>
+  Voice works on <strong>Chrome + Android</strong>. API key is stored in your browser only. Press <strong>SPACEBAR</strong> to toggle mic.<br><br>
+  <small style="color:var(--text2)">Tap anywhere to close</small>
+</div>
+
+<!-- Text Fallback Input -->
+<div class="text-fallback no-print">
+  <form onsubmit="handleTextInput(event)">
+    <input type="text" id="textInput" placeholder="Type item... e.g. Sugar 1kg 50rs">
+    <button type="submit">Add</button>
+  </form>
+</div>
+
+<!-- Bottom Bar -->
+<div class="bottombar no-print">
+  <div class="bottom-inner">
+    <button class="btn btn-secondary" onclick="undoItem()" title="Undo">&#8630; Undo</button>
+    <button class="btn btn-mic" id="micBtn" onclick="toggleMic()" title="Mic (Spacebar)">
+      <span id="micIcon">&#127908;</span>
+      <span class="ripple"></span>
+    </button>
+    <button class="btn btn-secondary" onclick="newBill()" title="New Bill">&#10227; New</button>
+    <button class="btn btn-print" onclick="printBill()" title="Print">&#128424; Print</button>
+  </div>
+</div>
+
+<!-- Settings Panel -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
 <div class="settings-panel" id="settingsPanel">
-  <h2>Settings</h2>
+  <h2>Settings <button onclick="closeSettings()">&times;</button></h2>
   <label>Shop Name</label>
   <input type="text" id="setShopName" placeholder="Rama General Store">
   <label>Shop Address</label>
   <input type="text" id="setShopAddr" placeholder="MG Road, Bengaluru">
   <label>Phone Number</label>
   <input type="tel" id="setShopPhone" placeholder="98765 43210">
-  <label>GSTIN (optional)</label>
+  <label>GSTIN (Optional)</label>
   <input type="text" id="setShopGST" placeholder="22AAAAA0000A1Z5">
   <label>Receipt Footer</label>
   <input type="text" id="setFooter" placeholder="Dobara padharen!">
-  <button class="save-btn" id="settingsSave">Save</button>
-  <button class="api-btn" id="changeApiKey">Change API Key</button>
-</div>
-
-<!-- TOP BAR -->
-<div class="topbar no-print">
-  <div class="topbar-left">
-    <h1 id="shopTitle">Awaaz Bill</h1>
-    <div class="bill-meta">Bill #<span id="billNum">001</span> &middot; <span id="billDate"></span></div>
-  </div>
-  <div class="topbar-right">
-    <button class="icon-btn" id="aboutBtn" aria-label="About">
-      ?
-      <div class="about-tooltip" id="aboutTooltip">
-        This is an MVP prototype. Voice works best on Chrome + Android.
-        API key is stored in your browser only. No data is sent to any server except Claude API for parsing your voice input.
-      </div>
-    </button>
-    <button class="icon-btn" id="settingsBtn" aria-label="Settings">&#9881;</button>
+  <button class="save-btn" onclick="saveSettings()">Save Settings</button>
+  <div class="api-section">
+    <label>Claude API Key</label>
+    <input type="password" id="setApiKey" placeholder="sk-ant-api03-...">
+    <button class="save-btn" onclick="saveApiKeyFromSettings()" style="margin-top:8px">Update API Key</button>
+    <button class="save-btn danger-btn" onclick="clearAllData()">Clear All Data</button>
   </div>
 </div>
 
-<div class="offline-badge" id="offlineBadge">Offline Mode</div>
+<!-- Receipt for Print -->
+<div class="receipt-print" id="receiptPrint"></div>
 
-<!-- BILL AREA -->
-<div class="bill-area no-print" id="billArea">
-  <div class="bill-empty" id="emptyState">
-    <div class="emoji">&#128722;</div>
-    Mic dabayein aur bolein —<br>"Sugar ek kilo do sau rupaye"
-  </div>
-  <div id="itemsList"></div>
-  <div class="totals-bar" id="totalsBar" style="display:none;">
-    <div class="totals-row"><span>Subtotal</span><span id="subtotalVal">&#8377;0</span></div>
-    <div class="totals-row grand"><span>Total</span><span id="grandTotalVal">&#8377;0</span></div>
-  </div>
-  <div class="ai-message" id="aiMessage"></div>
-  <div class="voice-bubble" id="voiceBubble">
-    <div class="label">Aap bole</div>
-    <div id="voiceText"></div>
-  </div>
-</div>
-
-<!-- BOTTOM BAR -->
-<div class="bottombar no-print">
-  <div class="bottom-actions">
-    <button class="action-btn" id="undoBtn">&#8630; Undo</button>
-    <button class="mic-btn" id="micBtn" aria-label="Voice input">&#127908;</button>
-    <button class="action-btn" id="newBillBtn">&#10227; Naya</button>
-    <button class="action-btn print-btn" id="printBtn">&#128424; Print</button>
-  </div>
-  <div class="text-fallback">
-    <input type="text" id="textInput" placeholder="Ya yahan type karein..." enterkeyhint="send">
-    <button id="textSend">Bhejein</button>
-  </div>
-</div>
-
-<!-- RECEIPT (for print) -->
-<div class="receipt" id="receipt"></div>
-
-<!-- TOAST -->
+<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-(function() {
-  'use strict';
+const LS_PREFIX = 'awaazBill_';
 
-  // ===== STATE =====
-  const DEFAULT_SHOP = {
-    shopName: 'Rama General Store',
-    shopAddress: 'MG Road, Bengaluru',
-    shopPhone: '98765 43210',
-    shopGST: '',
-    footer: 'Dobara padharen!'
-  };
+let billState = {
+  shopName: 'Rama General Store',
+  shopAddress: 'MG Road, Bengaluru',
+  shopPhone: '98765 43210',
+  shopGST: '',
+  footerMsg: 'Dobara padharen!',
+  customerName: '',
+  billNumber: 1,
+  billDate: '',
+  items: [],
+  subtotal: 0,
+  grandTotal: 0
+};
 
-  let billState = {
-    ...loadShopSettings(),
-    customerName: '',
-    billNumber: parseInt(localStorage.getItem('ab_billNum') || '1'),
-    billDate: formatDate(new Date()),
-    items: [],
-    subtotal: 0,
-    grandTotal: 0
-  };
+let apiKey = '';
+let isRecording = false;
+let recognition = null;
+let speechSupported = false;
 
-  let apiKey = localStorage.getItem('ab_apiKey') || '';
-  let isRecording = false;
-  let recognition = null;
-  let isProcessing = false;
+function init() {
+  loadFromStorage();
+  billState.billDate = formatDate(new Date());
+  updateTopBar();
+  renderBill();
 
-  // ===== DOM REFS =====
-  const $ = id => document.getElementById(id);
-  const apiModal = $('apiModal');
-  const apiKeyInput = $('apiKeyInput');
-  const apiKeySave = $('apiKeySave');
-  const shopTitle = $('shopTitle');
-  const billNum = $('billNum');
-  const billDate = $('billDate');
-  const billArea = $('billArea');
-  const itemsList = $('itemsList');
-  const emptyState = $('emptyState');
-  const totalsBar = $('totalsBar');
-  const subtotalVal = $('subtotalVal');
-  const grandTotalVal = $('grandTotalVal');
-  const voiceBubble = $('voiceBubble');
-  const voiceText = $('voiceText');
-  const aiMessage = $('aiMessage');
-  const micBtn = $('micBtn');
-  const undoBtn = $('undoBtn');
-  const newBillBtn = $('newBillBtn');
-  const printBtn = $('printBtn');
-  const textInput = $('textInput');
-  const textSend = $('textSend');
-  const settingsBtn = $('settingsBtn');
-  const settingsPanel = $('settingsPanel');
-  const settingsOverlay = $('settingsOverlay');
-  const settingsSave = $('settingsSave');
-  const changeApiKey = $('changeApiKey');
-  const aboutBtn = $('aboutBtn');
-  const aboutTooltip = $('aboutTooltip');
-  const offlineBadge = $('offlineBadge');
-  const toast = $('toast');
-  const receipt = $('receipt');
+  apiKey = localStorage.getItem(LS_PREFIX + 'apiKey') || '';
+  if (!apiKey) {
+    document.getElementById('apiModal').style.display = 'flex';
+  } else {
+    document.getElementById('apiModal').style.display = 'none';
+  }
 
-  // ===== INIT =====
-  function init() {
-    if (!apiKey) {
-      apiModal.classList.remove('hidden');
-    } else {
-      apiModal.classList.add('hidden');
-    }
-    updateDisplay();
+  initSpeechRecognition();
+
+  if (billState.items.length === 0 && !localStorage.getItem(LS_PREFIX + 'demoDone')) {
     loadDemoData();
-    initSpeechRecognition();
-    bindEvents();
-    updateOnlineStatus();
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
+    localStorage.setItem(LS_PREFIX + 'demoDone', '1');
   }
 
-  function loadShopSettings() {
-    const saved = localStorage.getItem('ab_shop');
-    return saved ? JSON.parse(saved) : { ...DEFAULT_SHOP };
-  }
-
-  function saveShopSettings() {
-    localStorage.setItem('ab_shop', JSON.stringify({
-      shopName: billState.shopName,
-      shopAddress: billState.shopAddress,
-      shopPhone: billState.shopPhone,
-      shopGST: billState.shopGST,
-      footer: billState.footer
-    }));
-  }
-
-  function formatDate(d) {
-    return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
-  }
-
-  function padBillNum(n) {
-    return String(n).padStart(3, '0');
-  }
-
-  function updateOnlineStatus() {
-    offlineBadge.classList.toggle('visible', !navigator.onLine);
-  }
-
-  function loadDemoData() {
-    if (localStorage.getItem('ab_demoLoaded')) return;
-    billState.items = [
-      { name: 'Tata Salt', name_hi: 'Tata Namak', quantity: 1, unit: 'kg', price_per_unit: 24, total: 24 },
-      { name: 'Surf Excel', name_hi: 'Surf Excel', quantity: 1, unit: 'packet', price_per_unit: 175, total: 175 },
-      { name: 'Parle-G Biscuit', name_hi: 'Parle-G Biscuit', quantity: 3, unit: 'packets', price_per_unit: 10, total: 30 }
-    ];
-    updateTotals();
-    renderItems();
-    localStorage.setItem('ab_demoLoaded', '1');
-  }
-
-  // ===== SPEECH RECOGNITION =====
-  function initSpeechRecognition() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
-    recognition = new SR();
-    recognition.lang = 'hi-IN';
-    recognition.continuous = false;
-    recognition.interimResults = true;
-
-    recognition.onstart = () => {
-      isRecording = true;
-      micBtn.classList.add('recording');
-      voiceBubble.classList.add('visible');
-      voiceText.innerHTML = '<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span> Sun raha hoon...';
-    };
-
-    recognition.onresult = (e) => {
-      let interim = '';
-      let final = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const t = e.results[i][0].transcript;
-        if (e.results[i].isFinal) {
-          final += t;
-        } else {
-          interim += t;
-        }
-      }
-      if (final) {
-        voiceText.textContent = final;
-      } else if (interim) {
-        voiceText.textContent = interim + '...';
-      }
-    };
-
-    recognition.onend = () => {
-      isRecording = false;
-      micBtn.classList.remove('recording');
-      const transcript = voiceText.textContent.replace(/\.\.\.$/,'').trim();
-      if (transcript && transcript !== 'Sun raha hoon...') {
-        processInput(transcript);
-      }
-    };
-
-    recognition.onerror = (e) => {
-      isRecording = false;
-      micBtn.classList.remove('recording');
-      if (e.error === 'not-allowed') {
-        showToast('Mic ki permission chahiye. Browser settings mein allow karein.');
-      } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
-        showToast('Samajh nahi aaya. Dobara boliye.');
-      }
-    };
-  }
-
-  function toggleRecording() {
-    if (!recognition) {
-      showToast('Voice is not supported in this browser. Please use Chrome on Android or Desktop.');
-      return;
+  document.addEventListener('keydown', function(e) {
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      toggleMic();
     }
-    if (isRecording) {
-      recognition.stop();
-    } else {
-      try {
-        recognition.start();
-      } catch(e) {
-        recognition.stop();
-        setTimeout(() => recognition.start(), 200);
-      }
+  });
+
+  document.addEventListener('click', function(e) {
+    const about = document.getElementById('aboutTooltip');
+    if (about.classList.contains('visible') && !about.contains(e.target)) {
+      about.classList.remove('visible');
     }
+  });
+
+  updateOnlineStatus();
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+}
+
+function formatDate(d) {
+  return d.getDate().toString().padStart(2,'0') + '/' + (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getFullYear().toString().slice(-2);
+}
+
+function loadFromStorage() {
+  const s = localStorage.getItem(LS_PREFIX + 'shopSettings');
+  if (s) {
+    try {
+      const p = JSON.parse(s);
+      billState.shopName = p.shopName || billState.shopName;
+      billState.shopAddress = p.shopAddress || billState.shopAddress;
+      billState.shopPhone = p.shopPhone || billState.shopPhone;
+      billState.shopGST = p.shopGST || '';
+      billState.footerMsg = p.footerMsg || billState.footerMsg;
+    } catch(e) {}
+  }
+  const bn = localStorage.getItem(LS_PREFIX + 'billNumber');
+  if (bn) billState.billNumber = parseInt(bn) || 1;
+
+  const saved = localStorage.getItem(LS_PREFIX + 'currentBill');
+  if (saved) {
+    try {
+      const p = JSON.parse(saved);
+      billState.items = p.items || [];
+      billState.customerName = p.customerName || '';
+      updateTotals();
+    } catch(e) {}
+  }
+}
+
+function saveBillToStorage() {
+  localStorage.setItem(LS_PREFIX + 'currentBill', JSON.stringify({
+    items: billState.items,
+    customerName: billState.customerName
+  }));
+}
+
+function loadDemoData() {
+  billState.items = [
+    { name: 'Tata Salt', name_hi: 'Tata Namak', quantity: 1, unit: 'kg', price_per_unit: 24, total: 24 },
+    { name: 'Surf Excel', name_hi: 'Surf Excel', quantity: 1, unit: 'packet', price_per_unit: 175, total: 175 },
+    { name: 'Parle-G Biscuit', name_hi: 'Parle-G Biscuit', quantity: 3, unit: 'packets', price_per_unit: 10, total: 30 }
+  ];
+  updateTotals();
+  saveBillToStorage();
+  renderBill();
+}
+
+function updateTotals() {
+  billState.subtotal = billState.items.reduce((s, i) => s + (i.total || 0), 0);
+  billState.grandTotal = billState.subtotal;
+}
+
+function updateTopBar() {
+  document.getElementById('topShopName').textContent = billState.shopName;
+  document.getElementById('topBillNo').textContent = String(billState.billNumber).padStart(3, '0');
+  document.getElementById('topDate').textContent = billState.billDate;
+}
+
+function renderBill() {
+  const list = document.getElementById('billItemsList');
+  const empty = document.getElementById('billEmpty');
+  const totals = document.getElementById('totalsSection');
+
+  if (billState.items.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    totals.style.display = 'none';
+    return;
   }
 
-  // ===== PROCESS INPUT =====
-  async function processInput(transcript) {
-    if (isProcessing) return;
-    isProcessing = true;
+  empty.style.display = 'none';
+  totals.style.display = 'block';
 
-    voiceBubble.classList.add('visible');
-    voiceText.textContent = transcript;
-    aiMessage.classList.remove('visible');
+  list.innerHTML = billState.items.map((item, i) => {
+    const isLast = i === billState.items.length - 1;
+    return `<li class="${isLast ? 'highlight' : ''}" ${isLast ? 'id="lastItem"' : ''}>
+      <div class="item-name">${esc(item.name)}${item.name_hi && item.name_hi !== item.name ? '<small>' + esc(item.name_hi) + '</small>' : ''}</div>
+      <div class="item-qty">${item.quantity} ${esc(item.unit)} × ₹${item.price_per_unit}</div>
+      <div class="item-total">₹${item.total.toFixed(2)}</div>
+    </li>`;
+  }).join('');
 
-    if (navigator.onLine && apiKey) {
-      try {
-        const result = await callClaude(transcript);
-        applyAction(result);
-      } catch (err) {
-        const fallback = offlineParse(transcript);
-        if (fallback) {
-          applyAction(fallback);
-          showToast('API se connect nahi hua — offline mode mein parse kiya.');
-        } else {
-          showToast('Samajh nahi aaya. Dobara boliye ya type karein.');
-        }
-      }
-    } else {
-      const fallback = offlineParse(transcript);
-      if (fallback) {
-        applyAction(fallback);
+  document.getElementById('subtotalDisplay').textContent = '₹' + billState.subtotal.toFixed(2);
+  document.getElementById('grandTotalDisplay').textContent = '₹' + billState.grandTotal.toFixed(2);
+
+  if (document.getElementById('lastItem')) {
+    setTimeout(() => {
+      const el = document.getElementById('lastItem');
+      if (el) el.classList.remove('highlight');
+    }, 1500);
+  }
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+// Speech Recognition
+function initSpeechRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    speechSupported = false;
+    return;
+  }
+  speechSupported = true;
+  recognition = new SR();
+  recognition.lang = 'hi-IN';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onstart = function() {
+    isRecording = true;
+    document.getElementById('micBtn').classList.add('recording');
+    showBadge('listening');
+  };
+
+  recognition.onresult = function(e) {
+    let interim = '';
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        final += e.results[i][0].transcript;
       } else {
-        showToast('Offline hain — simple format mein boliye: "item qty unit price"');
+        interim += e.results[i][0].transcript;
       }
     }
-    isProcessing = false;
+    const bubble = document.getElementById('transcriptBubble');
+    const txt = document.getElementById('transcriptText');
+    if (interim) {
+      txt.textContent = interim + '...';
+      bubble.classList.add('visible');
+    }
+    if (final) {
+      txt.textContent = final;
+      bubble.classList.add('visible');
+      processTranscript(final.trim());
+    }
+  };
+
+  recognition.onerror = function(e) {
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    hideBadge('listening');
+    if (e.error === 'not-allowed') {
+      showToast('Mic permission denied. Browser settings mein mic allow karein.', 'error');
+    } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
+      showToast('Voice samajh nahi aayi. Dobara try karein.', 'error');
+    }
+  };
+
+  recognition.onend = function() {
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    hideBadge('listening');
+  };
+}
+
+function toggleMic() {
+  if (!speechSupported) {
+    showToast('Voice not supported. Please use Chrome on Android or Desktop.', 'error');
+    return;
+  }
+  if (isRecording) {
+    recognition.stop();
+  } else {
+    try {
+      recognition.start();
+    } catch(e) {
+      recognition.stop();
+      setTimeout(() => { try { recognition.start(); } catch(ex) {} }, 200);
+    }
+  }
+}
+
+function showBadge(type) {
+  if (type === 'listening') {
+    const bar = document.getElementById('statusBar');
+    if (!document.getElementById('badgeListening')) {
+      const b = document.createElement('span');
+      b.className = 'badge badge-listening';
+      b.id = 'badgeListening';
+      b.textContent = 'Listening...';
+      bar.appendChild(b);
+    }
+  }
+}
+
+function hideBadge(type) {
+  if (type === 'listening') {
+    const b = document.getElementById('badgeListening');
+    if (b) b.remove();
+  }
+}
+
+function updateOnlineStatus() {
+  const badge = document.getElementById('badgeOnline');
+  if (navigator.onLine) {
+    badge.className = 'badge badge-online';
+    badge.textContent = 'Online';
+  } else {
+    badge.className = 'badge badge-offline';
+    badge.textContent = 'Offline Mode';
+  }
+}
+
+// Process transcript
+async function processTranscript(text) {
+  if (!text) return;
+
+  if (!navigator.onLine || !apiKey) {
+    processOffline(text);
+    return;
   }
 
-  // ===== CLAUDE API =====
-  const SYSTEM_PROMPT = `You are a billing assistant for an Indian kirana/grocery store.
+  try {
+    const systemPrompt = `You are a billing assistant for an Indian kirana/grocery store.
 Parse the shop owner's spoken input and extract items for a bill.
 The input may be in Hindi, English, or Hinglish.
 
@@ -878,10 +575,8 @@ Rules for parsing:
 - "total", "print", "bill banao", "receipt" → action: "print_bill"
 - Map Hindi item names to English for the bill display
 - If nothing parseable, action: "none"
-- Always compute total = quantity * price_per_unit
-- If the user says a total price for multiple items (e.g. "3 packet 30 rupaye"), calculate price_per_unit = total / quantity`;
+- Always calculate total = quantity × price_per_unit`;
 
-  async function callClaude(transcript) {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -893,381 +588,354 @@ Rules for parsing:
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 500,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: transcript }]
+        system: systemPrompt,
+        messages: [{ role: 'user', content: text }]
       })
     });
 
     if (!resp.ok) {
-      const err = await resp.text();
-      throw new Error(err);
+      const errBody = await resp.text();
+      if (resp.status === 401) {
+        showToast('API key galat hai. Settings mein sahi key daalein.', 'error');
+      } else {
+        showToast('Server se error aaya. Dobara try karein.', 'error');
+      }
+      processOffline(text);
+      return;
     }
 
     const data = await resp.json();
-    const text = data.content[0].text.trim();
-    const jsonStr = text.replace(/^```json?\s*/i, '').replace(/```\s*$/i, '').trim();
-    return JSON.parse(jsonStr);
+    const content = data.content[0].text;
+
+    let parsed;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+    } catch(e) {
+      showToast('Samajh nahi aaya. Dobara boliye.', 'error');
+      speak('Samajh nahi aaya. Dobara boliye.');
+      return;
+    }
+
+    applyParsedAction(parsed);
+
+  } catch(e) {
+    processOffline(text);
+  }
+}
+
+function applyParsedAction(parsed) {
+  const action = parsed.action || 'none';
+  const msg = parsed.message || '';
+
+  if (msg) {
+    showAiMessage(msg);
   }
 
-  // ===== OFFLINE PARSER =====
-  function offlineParse(text) {
-    const lower = text.toLowerCase().trim();
-
-    if (/\b(hata|undo|remove|nikaal|nikal)\b/.test(lower)) {
-      return { action: 'remove_last', items: [], message: 'Last item remove kar diya.' };
-    }
-    if (/\b(clear|naya bill|new bill|saaf|reset)\b/.test(lower)) {
-      return { action: 'clear_all', items: [], message: 'Naya bill shuru.' };
-    }
-    if (/\b(print|total|receipt|bill banao|bill bana)\b/.test(lower)) {
-      return { action: 'print_bill', items: [], message: 'Bill print ho raha hai.' };
-    }
-
-    const items = [];
-    const patterns = [
-      /(.+?)\s+(\d+\.?\d*)\s*(kg|kilo|g|gram|litre|liter|l|ml|packet|pkt|piece|pc|pieces|packets|dana|bag)\w*\s+(\d+\.?\d*)\s*(rupay|rupee|rs|₹|rupaiye|rupaye)?\w*/gi,
-      /(.+?)\s+(\d+\.?\d*)\s*(rupay|rupee|rs|₹|rupaiye|rupaye)\w*/gi
-    ];
-
-    let match;
-    match = patterns[0].exec(lower);
-    if (match) {
-      const name = match[1].trim().replace(/^(ek|do|teen|char)\s+/i, '');
-      const qty = parseFloat(match[2]);
-      const unit = normalizeUnit(match[3]);
-      const price = parseFloat(match[4]);
-      items.push({
-        name: capitalize(name),
-        name_hi: capitalize(name),
-        quantity: qty,
-        unit: unit,
-        price_per_unit: price / qty,
-        total: price
-      });
-    }
-
-    if (items.length === 0) {
-      match = patterns[1].exec(lower);
-      if (match) {
-        const name = match[1].trim();
-        const price = parseFloat(match[2]);
-        items.push({
-          name: capitalize(name),
-          name_hi: capitalize(name),
-          quantity: 1,
-          unit: 'piece',
-          price_per_unit: price,
-          total: price
+  switch(action) {
+    case 'add_items':
+      if (parsed.items && parsed.items.length > 0) {
+        parsed.items.forEach(item => {
+          billState.items.push({
+            name: item.name || 'Item',
+            name_hi: item.name_hi || '',
+            quantity: item.quantity || 1,
+            unit: item.unit || 'piece',
+            price_per_unit: item.price_per_unit || 0,
+            total: item.total || (item.quantity || 1) * (item.price_per_unit || 0)
+          });
         });
+        updateTotals();
+        saveBillToStorage();
+        renderBill();
+        const last = parsed.items[parsed.items.length - 1];
+        speak(last.name + ' add kiya. ' + (last.quantity || 1) + ' ' + (last.unit || 'piece') + ', ' + (last.total || 0) + ' rupaye.');
       }
-    }
+      break;
 
-    if (items.length > 0) {
-      return { action: 'add_items', items, message: items.map(i => i.name + ' add kiya.').join(' ') };
-    }
-    return null;
-  }
-
-  function normalizeUnit(u) {
-    u = u.toLowerCase();
-    if (/^(kg|kilo)/.test(u)) return 'kg';
-    if (/^(g|gram)/.test(u)) return 'g';
-    if (/^(l|litre|liter)/.test(u)) return 'litre';
-    if (/^ml/.test(u)) return 'ml';
-    if (/^(packet|pkt|bag)/.test(u)) return 'packet';
-    return 'piece';
-  }
-
-  function capitalize(s) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  }
-
-  // ===== APPLY ACTION =====
-  function applyAction(result) {
-    if (!result || !result.action) return;
-
-    if (result.message) {
-      aiMessage.textContent = result.message;
-      aiMessage.classList.add('visible');
-    }
-
-    switch (result.action) {
-      case 'add_items':
-        addItems(result.items || []);
-        speak(result.message || 'Item add kiya.');
-        break;
-      case 'remove_last':
-        removeLastItem();
-        speak('Last item remove kar diya.');
-        break;
-      case 'clear_all':
-        clearAll();
-        speak('Naya bill shuru. Ready hain.');
-        break;
-      case 'print_bill':
-        printBill();
-        break;
-      case 'set_customer':
-        if (result.customer_name) {
-          billState.customerName = result.customer_name;
-          speak('Customer name set kiya: ' + result.customer_name);
-        }
-        break;
-      case 'none':
-        speak('Samajh nahi aaya. Dobara boliye.');
-        break;
-    }
-  }
-
-  // ===== BILL OPERATIONS =====
-  function addItems(items) {
-    if (!items || items.length === 0) return;
-    items.forEach(item => {
-      if (!item.total && item.price_per_unit && item.quantity) {
-        item.total = item.price_per_unit * item.quantity;
+    case 'remove_last':
+      if (billState.items.length > 0) {
+        const removed = billState.items.pop();
+        updateTotals();
+        saveBillToStorage();
+        renderBill();
+        speak('Last item remove kar diya. ' + removed.name);
+      } else {
+        speak('Bill mein koi item nahi hai.');
       }
-      billState.items.push(item);
-    });
-    updateTotals();
-    renderItems(true);
-  }
+      break;
 
-  function removeLastItem() {
-    if (billState.items.length === 0) {
-      showToast('Koi item nahi hai hataane ke liye.');
-      return;
-    }
-    billState.items.pop();
-    updateTotals();
-    renderItems();
-  }
-
-  function clearAll() {
-    billState.items = [];
-    billState.customerName = '';
-    updateTotals();
-    renderItems();
-    voiceBubble.classList.remove('visible');
-    aiMessage.classList.remove('visible');
-  }
-
-  function updateTotals() {
-    billState.subtotal = billState.items.reduce((sum, item) => sum + (item.total || 0), 0);
-    billState.grandTotal = billState.subtotal;
-  }
-
-  // ===== RENDER =====
-  function renderItems(highlightLast) {
-    if (billState.items.length === 0) {
-      emptyState.style.display = 'block';
-      totalsBar.style.display = 'none';
-      itemsList.innerHTML = '';
-      return;
-    }
-    emptyState.style.display = 'none';
-    totalsBar.style.display = 'block';
-
-    itemsList.innerHTML = billState.items.map((item, i) => {
-      const isLast = highlightLast && i === billState.items.length - 1;
-      return `<div class="item-row${isLast ? ' highlight' : ''}">
-        <div>
-          <div class="item-name">${esc(item.name)}</div>
-          <div class="item-detail">${esc(item.name_hi || '')}</div>
-        </div>
-        <div class="item-qty">${item.quantity} ${esc(item.unit || 'pc')}<br>@₹${formatNum(item.price_per_unit)}</div>
-        <div class="item-total">₹${formatNum(item.total)}</div>
-      </div>`;
-    }).join('');
-
-    subtotalVal.textContent = '₹' + formatNum(billState.subtotal);
-    grandTotalVal.textContent = '₹' + formatNum(billState.grandTotal);
-  }
-
-  function updateDisplay() {
-    shopTitle.textContent = billState.shopName || 'Awaaz Bill';
-    billNum.textContent = padBillNum(billState.billNumber);
-    billDate.textContent = billState.billDate;
-
-    $('setShopName').value = billState.shopName;
-    $('setShopAddr').value = billState.shopAddress;
-    $('setShopPhone').value = billState.shopPhone;
-    $('setShopGST').value = billState.shopGST;
-    $('setFooter').value = billState.footer;
-  }
-
-  function formatNum(n) {
-    if (n == null || isNaN(n)) return '0';
-    return Number(n).toFixed(2).replace(/\.00$/, '');
-  }
-
-  function esc(s) {
-    const d = document.createElement('div');
-    d.textContent = s;
-    return d.innerHTML;
-  }
-
-  // ===== PRINT =====
-  function printBill() {
-    if (billState.items.length === 0) {
-      showToast('Bill mein koi item nahi hai.');
-      speak('Bill mein koi item nahi hai.');
-      return;
-    }
-
-    const rows = billState.items.map(item =>
-      `<tr><td>${esc(item.name)}</td><td>${item.quantity}${esc(item.unit||'')}</td><td>₹${formatNum(item.price_per_unit)}</td><td>₹${formatNum(item.total)}</td></tr>`
-    ).join('');
-
-    const gstLine = billState.shopGST ? `<div class="r-meta">GST: ${esc(billState.shopGST)}</div>` : '';
-    const customerLine = billState.customerName ? `Customer: ${esc(billState.customerName)}<br>` : '';
-
-    receipt.innerHTML = `
-      <div class="r-center r-shop">${esc(billState.shopName)}</div>
-      <div class="r-center r-meta">${esc(billState.shopAddress)}<br>${esc(billState.shopPhone)}</div>
-      ${gstLine}
-      <hr class="r-divider">
-      <div class="r-meta">Bill No: ${padBillNum(billState.billNumber)} &nbsp; Date: ${billState.billDate}<br>${customerLine}</div>
-      <hr class="r-divider">
-      <table>
-        <tr><th>Item</th><th>Qty</th><th>Rate</th><th>Amt</th></tr>
-        ${rows}
-      </table>
-      <hr class="r-divider">
-      <div class="r-total-section">
-        Subtotal: ₹${formatNum(billState.subtotal)}<br>
-        <span class="r-grand">Total: ₹${formatNum(billState.grandTotal)}</span>
-      </div>
-      <hr class="r-divider">
-      <div class="r-footer">Thank you! Aapka shukriya<br>${esc(billState.footer)} &#128591;</div>
-    `;
-
-    speak('Bill print ho raha hai.');
-    setTimeout(() => {
-      window.print();
-      billState.billNumber++;
-      localStorage.setItem('ab_billNum', String(billState.billNumber));
-      billNum.textContent = padBillNum(billState.billNumber);
-      speak('Aapka bill print ho raha hai. Naya bill ke liye mic dabayein.');
-    }, 300);
-  }
-
-  // ===== VOICE FEEDBACK =====
-  function speak(text) {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'hi-IN';
-    utter.rate = 1.0;
-    const voices = window.speechSynthesis.getVoices();
-    const hindiVoice = voices.find(v => v.lang === 'hi-IN' && v.name.toLowerCase().includes('female'))
-      || voices.find(v => v.lang === 'hi-IN')
-      || voices.find(v => v.lang.startsWith('hi'));
-    if (hindiVoice) utter.voice = hindiVoice;
-    window.speechSynthesis.speak(utter);
-  }
-
-  if (window.speechSynthesis) {
-    window.speechSynthesis.onvoiceschanged = () => {};
-  }
-
-  // ===== TOAST =====
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.classList.add('visible');
-    setTimeout(() => toast.classList.remove('visible'), 3000);
-  }
-
-  // ===== EVENT BINDINGS =====
-  function bindEvents() {
-    // API key save
-    apiKeySave.addEventListener('click', () => {
-      const key = apiKeyInput.value.trim();
-      if (!key) return;
-      apiKey = key;
-      localStorage.setItem('ab_apiKey', key);
-      apiModal.classList.add('hidden');
-      showToast('API key save ho gayi. Awaaz Bill ready hai!');
-    });
-    apiKeyInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') apiKeySave.click();
-    });
-
-    // Mic
-    micBtn.addEventListener('click', toggleRecording);
-
-    // Keyboard shortcut: Space
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
-        e.preventDefault();
-        toggleRecording();
-      }
-    });
-
-    // Undo
-    undoBtn.addEventListener('click', () => {
-      removeLastItem();
-      speak('Last item remove kar diya.');
-    });
-
-    // New bill
-    newBillBtn.addEventListener('click', () => {
-      clearAll();
+    case 'clear_all':
+      billState.items = [];
+      billState.customerName = '';
+      updateTotals();
+      saveBillToStorage();
+      renderBill();
       speak('Naya bill shuru. Ready hain.');
-    });
+      break;
 
-    // Print
-    printBtn.addEventListener('click', printBill);
+    case 'print_bill':
+      printBill();
+      break;
 
-    // Text input fallback
-    textSend.addEventListener('click', () => {
-      const val = textInput.value.trim();
-      if (!val) return;
-      textInput.value = '';
-      processInput(val);
-    });
-    textInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') textSend.click();
-    });
+    case 'set_customer':
+      if (parsed.customer_name) {
+        billState.customerName = parsed.customer_name;
+        saveBillToStorage();
+        speak('Customer name set kiya: ' + parsed.customer_name);
+      }
+      break;
 
-    // Settings
-    settingsBtn.addEventListener('click', () => {
-      settingsPanel.classList.add('visible');
-      settingsOverlay.classList.add('visible');
-    });
-    settingsOverlay.addEventListener('click', closeSettings);
-    settingsSave.addEventListener('click', () => {
-      billState.shopName = $('setShopName').value.trim() || DEFAULT_SHOP.shopName;
-      billState.shopAddress = $('setShopAddr').value.trim() || DEFAULT_SHOP.shopAddress;
-      billState.shopPhone = $('setShopPhone').value.trim() || DEFAULT_SHOP.shopPhone;
-      billState.shopGST = $('setShopGST').value.trim();
-      billState.footer = $('setFooter').value.trim() || DEFAULT_SHOP.footer;
-      saveShopSettings();
-      updateDisplay();
-      closeSettings();
-      showToast('Settings save ho gayi.');
-    });
-    changeApiKey.addEventListener('click', () => {
-      closeSettings();
-      apiModal.classList.remove('hidden');
-      apiKeyInput.value = '';
-    });
+    case 'none':
+      speak('Samajh nahi aaya. Dobara boliye.');
+      break;
+  }
+}
 
-    // About
-    aboutBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      aboutTooltip.classList.toggle('visible');
-    });
-    document.addEventListener('click', () => aboutTooltip.classList.remove('visible'));
+// Offline regex parser
+function processOffline(text) {
+  const lower = text.toLowerCase().trim();
 
-    function closeSettings() {
-      settingsPanel.classList.remove('visible');
-      settingsOverlay.classList.remove('visible');
+  if (/hata\s*do|undo|remove|nikal|hatao/.test(lower)) {
+    applyParsedAction({ action: 'remove_last', message: 'Last item hata diya (offline mode)' });
+    return;
+  }
+  if (/naya\s*bill|new\s*bill|clear|saaf/.test(lower)) {
+    applyParsedAction({ action: 'clear_all', message: 'Naya bill (offline mode)' });
+    return;
+  }
+  if (/print|bill\s*banao|receipt|total\s*karo/.test(lower)) {
+    applyParsedAction({ action: 'print_bill', message: 'Print kar rahe hain' });
+    return;
+  }
+
+  const patterns = [
+    /(.+?)\s+(\d+(?:\.\d+)?)\s*(kg|kilo|g|gram|litre|liter|l|ml|packet|packets|pkt|piece|pieces|pc|pcs|dozen)?\s*[,.]?\s*(?:(?:rs|rupay(?:e|a)?|₹|rupees?)?\s*)?(\d+(?:\.\d+)?)\s*(?:rs|rupay(?:e|a)?|₹|rupees?)?/i,
+    /(.+?)\s+(?:rs|rupay(?:e|a)?|₹|rupees?)\s*(\d+(?:\.\d+)?)/i
+  ];
+
+  let matched = false;
+  const m1 = lower.match(patterns[0]);
+  if (m1) {
+    const name = m1[1].trim().replace(/^(ek|do|teen|char)\s+/i, '');
+    const qty = parseFloat(m1[2]) || 1;
+    const unit = m1[3] || 'piece';
+    const price = parseFloat(m1[4]) || 0;
+    applyParsedAction({
+      action: 'add_items',
+      items: [{ name: capitalize(name), name_hi: '', quantity: qty, unit: unit, price_per_unit: price / qty, total: price }],
+      message: capitalize(name) + ' add kiya (offline mode)'
+    });
+    matched = true;
+  }
+
+  if (!matched) {
+    const m2 = lower.match(patterns[1]);
+    if (m2) {
+      const name = m2[1].trim();
+      const price = parseFloat(m2[2]) || 0;
+      applyParsedAction({
+        action: 'add_items',
+        items: [{ name: capitalize(name), name_hi: '', quantity: 1, unit: 'piece', price_per_unit: price, total: price }],
+        message: capitalize(name) + ' add kiya (offline mode)'
+      });
+      matched = true;
     }
   }
 
-  // ===== START =====
-  init();
-})();
+  if (!matched) {
+    showToast('Samajh nahi aaya. Format: "Item qty unit price"', 'error');
+    speak('Samajh nahi aaya. Dobara boliye.');
+  }
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// TTS
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'hi-IN';
+  u.rate = 1.05;
+  const voices = window.speechSynthesis.getVoices();
+  const hindiVoice = voices.find(v => v.lang.startsWith('hi') && v.name.toLowerCase().includes('female')) ||
+                     voices.find(v => v.lang.startsWith('hi')) ||
+                     null;
+  if (hindiVoice) u.voice = hindiVoice;
+  window.speechSynthesis.speak(u);
+}
+
+// Ensure voices are loaded
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = function() {};
+  window.speechSynthesis.getVoices();
+}
+
+// Text input fallback
+function handleTextInput(e) {
+  e.preventDefault();
+  const input = document.getElementById('textInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  document.getElementById('transcriptText').textContent = text;
+  document.getElementById('transcriptBubble').classList.add('visible');
+
+  processTranscript(text);
+}
+
+// Actions
+function undoItem() {
+  applyParsedAction({ action: 'remove_last', message: 'Last item hata diya' });
+}
+
+function newBill() {
+  applyParsedAction({ action: 'clear_all', message: 'Naya bill shuru' });
+}
+
+function printBill() {
+  if (billState.items.length === 0) {
+    showToast('Bill mein koi item nahi hai.', 'error');
+    speak('Bill mein koi item nahi hai.');
+    return;
+  }
+
+  buildReceipt();
+  speak('Aapka bill print ho raha hai. Naya bill ke liye mic dabayein.');
+
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      billState.billNumber++;
+      localStorage.setItem(LS_PREFIX + 'billNumber', billState.billNumber);
+      updateTopBar();
+    }, 1000);
+  }, 300);
+}
+
+function buildReceipt() {
+  const r = document.getElementById('receiptPrint');
+  let html = '';
+  html += `<div class="r-shop">${esc(billState.shopName)}</div>`;
+  html += `<div class="r-addr">${esc(billState.shopAddress)}</div>`;
+  if (billState.shopPhone) html += `<div class="r-phone">Ph: ${esc(billState.shopPhone)}</div>`;
+  if (billState.shopGST) html += `<div class="r-gst">GST: ${esc(billState.shopGST)}</div>`;
+  html += `<div class="r-line"></div>`;
+  html += `<div class="r-meta">Bill No: ${String(billState.billNumber).padStart(3,'0')}&nbsp;&nbsp;Date: ${billState.billDate}</div>`;
+  if (billState.customerName) html += `<div class="r-meta">Customer: ${esc(billState.customerName)}</div>`;
+  html += `<div class="r-line"></div>`;
+  html += `<div class="r-header"><span>ITEM</span><span>QTY</span><span>RATE</span><span>AMT</span></div>`;
+
+  billState.items.forEach(item => {
+    html += `<div class="r-item">
+      <span class="r-item-left">${esc(item.name)}<br><span class="r-item-detail">${item.quantity}${esc(item.unit)} × ₹${item.price_per_unit}</span></span>
+      <span>₹${item.total.toFixed(2)}</span>
+    </div>`;
+  });
+
+  html += `<div class="r-totals">`;
+  html += `<div>Subtotal: ₹${billState.subtotal.toFixed(2)}</div>`;
+  html += `<div class="r-grand">Total: ₹${billState.grandTotal.toFixed(2)}</div>`;
+  html += `</div>`;
+  html += `<div class="r-footer">${esc(billState.footerMsg)} 🙏</div>`;
+
+  r.innerHTML = html;
+}
+
+// UI Helpers
+function showAiMessage(msg) {
+  const el = document.getElementById('aiMessage');
+  el.textContent = msg;
+  el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 4000);
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type || '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function toggleAbout() {
+  document.getElementById('aboutTooltip').classList.toggle('visible');
+}
+
+// Settings
+function openSettings() {
+  document.getElementById('setShopName').value = billState.shopName;
+  document.getElementById('setShopAddr').value = billState.shopAddress;
+  document.getElementById('setShopPhone').value = billState.shopPhone;
+  document.getElementById('setShopGST').value = billState.shopGST;
+  document.getElementById('setFooter').value = billState.footerMsg;
+  document.getElementById('setApiKey').value = apiKey;
+  document.getElementById('settingsOverlay').classList.add('open');
+  document.getElementById('settingsPanel').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
+  document.getElementById('settingsPanel').classList.remove('open');
+}
+
+function saveSettings() {
+  billState.shopName = document.getElementById('setShopName').value || billState.shopName;
+  billState.shopAddress = document.getElementById('setShopAddr').value || billState.shopAddress;
+  billState.shopPhone = document.getElementById('setShopPhone').value || '';
+  billState.shopGST = document.getElementById('setShopGST').value || '';
+  billState.footerMsg = document.getElementById('setFooter').value || 'Dobara padharen!';
+
+  localStorage.setItem(LS_PREFIX + 'shopSettings', JSON.stringify({
+    shopName: billState.shopName,
+    shopAddress: billState.shopAddress,
+    shopPhone: billState.shopPhone,
+    shopGST: billState.shopGST,
+    footerMsg: billState.footerMsg
+  }));
+
+  updateTopBar();
+  closeSettings();
+  showToast('Settings saved!', 'success');
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) {
+    showToast('API key daalein', 'error');
+    return;
+  }
+  apiKey = key;
+  localStorage.setItem(LS_PREFIX + 'apiKey', key);
+  document.getElementById('apiModal').style.display = 'none';
+  showToast('API key saved! Ab voice billing ready hai.', 'success');
+}
+
+function saveApiKeyFromSettings() {
+  const key = document.getElementById('setApiKey').value.trim();
+  if (!key) {
+    showToast('API key daalein', 'error');
+    return;
+  }
+  apiKey = key;
+  localStorage.setItem(LS_PREFIX + 'apiKey', key);
+  showToast('API key updated!', 'success');
+}
+
+function clearAllData() {
+  if (confirm('Sab data clear ho jayega. Are you sure?')) {
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith(LS_PREFIX)) localStorage.removeItem(k);
+    });
+    location.reload();
+  }
+}
+
+// Init on load
+window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
