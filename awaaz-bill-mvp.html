@@ -6,10 +6,16 @@
 <title>Awaaz Bill — Voice Billing</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#1a1a2e;--bg2:#16213e;--bg3:#0f3460;--accent:#f5a623;--accent2:#e94560;--text:#f0e6d3;--text2:#a8a0b0;--green:#2ecc71;--red:#e74c3c;--white:#fff;--shadow:0 4px 20px rgba(0,0,0,0.4)}
+:root{
+  --bg:#1a1a2e;--bg2:#16213e;--bg3:#0f3460;
+  --accent:#f5a623;--accent2:#e94560;
+  --text:#f0e6d3;--text2:#a8a0b0;
+  --green:#2ecc71;--red:#e74c3c;--white:#fff;
+  --shadow:0 4px 20px rgba(0,0,0,0.4)
+}
 html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 
-/* API Key Modal */
+/* ── API Key Modal ── */
 .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
 .modal{background:var(--bg2);border-radius:16px;padding:32px;max-width:440px;width:100%;box-shadow:var(--shadow);border:1px solid rgba(245,166,35,0.2)}
 .modal h2{color:var(--accent);font-size:22px;margin-bottom:8px}
@@ -20,19 +26,19 @@ html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;ba
 .modal button{width:100%;padding:14px;border:none;border-radius:10px;background:var(--accent);color:#000;font-size:16px;font-weight:700;cursor:pointer}
 .modal button:active{transform:scale(0.98)}
 
-/* Top Bar */
+/* ── Top Bar ── */
 .topbar{background:var(--bg2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);position:sticky;top:0;z-index:100}
 .topbar .shop-info{flex:1;min-width:0}
 .topbar .shop-name{font-size:18px;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topbar .bill-meta{font-size:13px;color:var(--text2);margin-top:2px}
 .topbar .actions{display:flex;gap:8px;flex-shrink:0}
-.topbar .actions button{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:10px}
+.topbar .actions button{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px}
 .topbar .actions button:hover{background:rgba(255,255,255,0.05)}
 
-/* Main Content */
+/* ── Main Content ── */
 .main{padding:12px 16px 200px;max-width:600px;margin:0 auto;width:100%}
 
-/* Status Badges */
+/* ── Status Badges ── */
 .status-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600}
 .badge-offline{background:rgba(231,76,60,0.2);color:var(--red)}
@@ -40,18 +46,18 @@ html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;ba
 .badge-listening{background:rgba(233,69,96,0.2);color:var(--accent2);animation:pulse-badge 1s infinite}
 @keyframes pulse-badge{0%,100%{opacity:1}50%{opacity:0.5}}
 
-/* Transcript Bubble */
+/* ── Transcript Bubble ── */
 .transcript-area{margin-bottom:16px;min-height:0}
 .transcript-bubble{background:var(--bg2);border-radius:12px;padding:12px 16px;font-size:15px;color:var(--text);border-left:3px solid var(--accent);display:none;animation:fadeIn 0.2s ease}
 .transcript-bubble.visible{display:block}
 .transcript-bubble .label{font-size:11px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 
-/* AI Message */
+/* ── AI Message ── */
 .ai-message{background:rgba(245,166,35,0.08);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--accent);margin-bottom:16px;display:none;border:1px solid rgba(245,166,35,0.15)}
 .ai-message.visible{display:block}
 
-/* Bill Table */
+/* ── Bill Table ── */
 .bill-section h3{font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px dashed rgba(255,255,255,0.1)}
 .bill-items{list-style:none}
 .bill-items li{display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:16px;align-items:center;transition:background 0.3s}
@@ -63,13 +69,13 @@ html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;ba
 .bill-empty{text-align:center;padding:40px 20px;color:var(--text2);font-size:16px}
 .bill-empty .icon{font-size:48px;margin-bottom:12px;display:block}
 
-/* Totals */
+/* ── Totals ── */
 .totals{margin-top:16px;padding-top:12px;border-top:2px solid rgba(245,166,35,0.3)}
 .total-row{display:flex;justify-content:space-between;font-size:18px;padding:4px 0}
 .total-row.grand{font-size:22px;font-weight:800;color:var(--accent);margin-top:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1)}
 .total-row .label{color:var(--text2)}
 
-/* Bottom Bar */
+/* ── Bottom Bar ── */
 .bottombar{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--bg) 80%,transparent);padding:12px 16px 20px;z-index:100}
 .bottom-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:12px}
 .btn{border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform 0.1s,opacity 0.2s}
@@ -83,20 +89,20 @@ html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;ba
 .btn-mic.recording .ripple{display:block}
 @keyframes ripple-out{0%{transform:scale(1);opacity:0.6}100%{transform:scale(1.6);opacity:0}}
 
-/* Text Input Fallback */
+/* ── Text Input Fallback ── */
 .text-fallback{max-width:600px;margin:0 auto;padding:0 16px;position:fixed;bottom:110px;left:0;right:0;z-index:99}
 .text-fallback form{display:flex;gap:8px}
 .text-fallback input{flex:1;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:var(--bg2);color:var(--text);font-size:15px}
 .text-fallback input:focus{outline:none;border-color:var(--accent)}
-.text-fallback button{padding:12px 16px;border:none;border-radius:12px;background:var(--accent);color:#000;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap}
+.text-fallback button{padding:12px 16px;border:none;border-radius:12px;background:var(--accent);color:#000;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap;min-height:48px;min-width:48px}
 
-/* Settings Panel */
+/* ── Settings Panel ── */
 .settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;opacity:0;transition:opacity 0.3s}
 .settings-overlay.open{display:block;opacity:1}
 .settings-panel{position:fixed;top:0;right:-100%;width:min(360px,90%);height:100%;background:var(--bg2);z-index:501;padding:24px;overflow-y:auto;transition:right 0.3s ease}
 .settings-panel.open{right:0}
 .settings-panel h2{color:var(--accent);font-size:20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
-.settings-panel h2 button{background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer}
+.settings-panel h2 button{background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
 .settings-panel label{display:block;font-size:13px;color:var(--text2);margin-bottom:4px;margin-top:16px;text-transform:uppercase;letter-spacing:0.5px}
 .settings-panel input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:var(--bg);color:var(--text);font-size:15px}
 .settings-panel input:focus{outline:none;border-color:var(--accent)}
@@ -104,43 +110,53 @@ html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;ba
 .settings-panel .api-section{margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1)}
 .settings-panel .danger-btn{background:var(--red);color:#fff;margin-top:8px}
 
-/* About Tooltip */
+/* ── About Tooltip ── */
 .about-tooltip{position:fixed;bottom:200px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid rgba(245,166,35,0.2);border-radius:12px;padding:16px 20px;max-width:340px;width:90%;font-size:13px;color:var(--text2);line-height:1.6;z-index:200;display:none;box-shadow:var(--shadow)}
 .about-tooltip.visible{display:block}
 .about-tooltip strong{color:var(--accent)}
 
-/* Toast */
+/* ── Toast ── */
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--bg3);color:var(--text);padding:12px 20px;border-radius:12px;font-size:14px;z-index:600;transition:transform 0.3s ease;box-shadow:var(--shadow);max-width:90%;text-align:center}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.error{border:1px solid var(--red)}
 .toast.success{border:1px solid var(--green)}
 
-/* Receipt Print Styles */
+/* ── Receipt Print Styles ── */
 .receipt-print{display:none}
 
 @media print{
   *{margin:0;padding:0}
-  body{background:#fff!important;color:#000!important;font-family:'Courier New',monospace!important;font-size:12px!important}
-  .topbar,.bottombar,.text-fallback,.settings-overlay,.settings-panel,.modal-overlay,.toast,.about-tooltip,.status-bar,.transcript-area,.ai-message,.no-print{display:none!important}
+  body{background:#fff!important;color:#000!important;font-family:'Courier New',Courier,monospace!important;font-size:12px!important}
+  .topbar,.bottombar,.text-fallback,.settings-overlay,.settings-panel,
+  .modal-overlay,.toast,.about-tooltip,.status-bar,.transcript-area,
+  .ai-message,.no-print{display:none!important}
   .main{display:none!important}
-  .receipt-print{display:block!important;width:80mm;margin:0 auto;padding:4mm 2mm;font-size:12px;line-height:1.4}
-  .receipt-print .r-shop{text-align:center;font-weight:700;font-size:14px;margin-bottom:2px}
+  .receipt-print{
+    display:block!important;width:80mm;margin:0 auto;padding:4mm 2mm;
+    font-size:12px;line-height:1.4;font-family:'Courier New',Courier,monospace
+  }
+  .receipt-print .r-shop{text-align:center;font-weight:700;font-size:16px;margin-bottom:2px}
   .receipt-print .r-addr{text-align:center;font-size:10px;margin-bottom:1px}
   .receipt-print .r-phone{text-align:center;font-size:10px}
-  .receipt-print .r-gst{text-align:center;font-size:10px;margin-bottom:4px}
+  .receipt-print .r-gst{text-align:center;font-size:10px;margin-bottom:2px}
   .receipt-print .r-line{border-top:1px dashed #000;margin:4px 0}
   .receipt-print .r-meta{font-size:11px;margin:2px 0}
-  .receipt-print .r-header{display:flex;justify-content:space-between;font-size:10px;font-weight:700;text-transform:uppercase;margin:4px 0;padding-bottom:2px;border-bottom:1px solid #000}
-  .receipt-print .r-item{display:flex;justify-content:space-between;font-size:11px;padding:1px 0}
-  .receipt-print .r-item .r-item-left{flex:1}
-  .receipt-print .r-item .r-item-detail{font-size:10px;color:#444}
-  .receipt-print .r-totals{text-align:right;margin-top:4px;padding-top:4px;border-top:1px dashed #000}
-  .receipt-print .r-totals .r-grand{font-size:14px;font-weight:700}
-  .receipt-print .r-footer{text-align:center;margin-top:6px;font-size:10px;padding-top:4px;border-top:1px dashed #000}
+  .receipt-print table{width:100%;border-collapse:collapse;font-size:11px}
+  .receipt-print th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 0;border-bottom:1px solid #000}
+  .receipt-print th:nth-child(2){text-align:center}
+  .receipt-print th:nth-child(3),
+  .receipt-print th:nth-child(4){text-align:right}
+  .receipt-print td{padding:2px 0;vertical-align:top;font-size:11px}
+  .receipt-print td:nth-child(2){text-align:center}
+  .receipt-print td:nth-child(3),
+  .receipt-print td:nth-child(4){text-align:right}
+  .receipt-print .r-totals{text-align:right;margin-top:4px;padding-top:4px;border-top:1px dashed #000;font-size:11px}
+  .receipt-print .r-grand{font-size:14px;font-weight:700;margin-top:2px}
+  .receipt-print .r-footer{text-align:center;margin-top:6px;font-size:10px;padding-top:4px;border-top:1px dashed #000;line-height:1.6}
   @page{size:80mm auto;margin:0}
 }
 
-/* Scrollbar */
+/* ── Scrollbar ── */
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
@@ -268,6 +284,43 @@ html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;ba
 <script>
 const LS_PREFIX = 'awaazBill_';
 
+const SYSTEM_PROMPT = `You are a billing assistant for an Indian kirana/grocery store.
+Parse the shop owner's spoken input and extract items for a bill.
+The input may be in Hindi, English, or Hinglish.
+
+Respond ONLY with a valid JSON object. No other text, no markdown, no explanation.
+
+JSON format:
+{
+  "action": "add_items" | "remove_last" | "clear_all" | "print_bill" | "set_customer" | "none",
+  "items": [
+    {
+      "name": "Sugar",
+      "name_hi": "Cheeni",
+      "quantity": 1,
+      "unit": "kg",
+      "price_per_unit": 50,
+      "total": 50
+    }
+  ],
+  "customer_name": null,
+  "message": "Brief 1-line confirmation in Hinglish"
+}
+
+Rules for parsing:
+- Extract item name, quantity, unit (kg/g/litre/ml/packet/piece), and price
+- If only price is mentioned without unit, assume 1 piece
+- Always calculate total = quantity * price_per_unit
+- Multiple items in one sentence: split them into separate items in the array
+- "hata do", "undo", "remove", "nikal do" → action: "remove_last"
+- "clear", "naya bill", "new bill", "saaf karo" → action: "clear_all"
+- "total", "print", "bill banao", "receipt", "print karo", "total karo" → action: "print_bill"
+- "customer name [X]", "naam [X]" → action: "set_customer", customer_name: "[X]"
+- "nahi nahi" or corrections after an item → action: "remove_last" first, handle separately
+- Map Hindi item names to English for name field, keep Hindi in name_hi
+- Hindi number words: ek=1, do=2, teen=3, char=4, paanch=5, chhe=6, saat=7, aath=8, nau=9, das=10, bees=20, tees=30, chalees=40, pachaas=50, sau=100, do sau=200, teen sau=300, hazaar=1000
+- If nothing parseable, action: "none"`;
+
 let billState = {
   shopName: 'Rama General Store',
   shopAddress: 'MG Road, Bengaluru',
@@ -286,12 +339,12 @@ let apiKey = '';
 let isRecording = false;
 let recognition = null;
 let speechSupported = false;
+let isProcessing = false;
 
 function init() {
   loadFromStorage();
   billState.billDate = formatDate(new Date());
   updateTopBar();
-  renderBill();
 
   apiKey = localStorage.getItem(LS_PREFIX + 'apiKey') || '';
   if (!apiKey) {
@@ -307,6 +360,8 @@ function init() {
     localStorage.setItem(LS_PREFIX + 'demoDone', '1');
   }
 
+  renderBill();
+
   document.addEventListener('keydown', function(e) {
     if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
       e.preventDefault();
@@ -315,7 +370,7 @@ function init() {
   });
 
   document.addEventListener('click', function(e) {
-    const about = document.getElementById('aboutTooltip');
+    var about = document.getElementById('aboutTooltip');
     if (about.classList.contains('visible') && !about.contains(e.target)) {
       about.classList.remove('visible');
     }
@@ -327,32 +382,34 @@ function init() {
 }
 
 function formatDate(d) {
-  return d.getDate().toString().padStart(2,'0') + '/' + (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getFullYear().toString().slice(-2);
+  return d.getDate().toString().padStart(2, '0') + '/' +
+    (d.getMonth() + 1).toString().padStart(2, '0') + '/' +
+    d.getFullYear().toString().slice(-2);
 }
 
 function loadFromStorage() {
-  const s = localStorage.getItem(LS_PREFIX + 'shopSettings');
+  var s = localStorage.getItem(LS_PREFIX + 'shopSettings');
   if (s) {
     try {
-      const p = JSON.parse(s);
+      var p = JSON.parse(s);
       billState.shopName = p.shopName || billState.shopName;
       billState.shopAddress = p.shopAddress || billState.shopAddress;
       billState.shopPhone = p.shopPhone || billState.shopPhone;
       billState.shopGST = p.shopGST || '';
       billState.footerMsg = p.footerMsg || billState.footerMsg;
-    } catch(e) {}
+    } catch (e) {}
   }
-  const bn = localStorage.getItem(LS_PREFIX + 'billNumber');
+  var bn = localStorage.getItem(LS_PREFIX + 'billNumber');
   if (bn) billState.billNumber = parseInt(bn) || 1;
 
-  const saved = localStorage.getItem(LS_PREFIX + 'currentBill');
+  var saved = localStorage.getItem(LS_PREFIX + 'currentBill');
   if (saved) {
     try {
-      const p = JSON.parse(saved);
-      billState.items = p.items || [];
-      billState.customerName = p.customerName || '';
+      var p2 = JSON.parse(saved);
+      billState.items = p2.items || [];
+      billState.customerName = p2.customerName || '';
       updateTotals();
-    } catch(e) {}
+    } catch (e) {}
   }
 }
 
@@ -371,11 +428,10 @@ function loadDemoData() {
   ];
   updateTotals();
   saveBillToStorage();
-  renderBill();
 }
 
 function updateTotals() {
-  billState.subtotal = billState.items.reduce((s, i) => s + (i.total || 0), 0);
+  billState.subtotal = billState.items.reduce(function(s, i) { return s + (i.total || 0); }, 0);
   billState.grandTotal = billState.subtotal;
 }
 
@@ -386,9 +442,9 @@ function updateTopBar() {
 }
 
 function renderBill() {
-  const list = document.getElementById('billItemsList');
-  const empty = document.getElementById('billEmpty');
-  const totals = document.getElementById('totalsSection');
+  var list = document.getElementById('billItemsList');
+  var empty = document.getElementById('billEmpty');
+  var totals = document.getElementById('totalsSection');
 
   if (billState.items.length === 0) {
     list.innerHTML = '';
@@ -400,35 +456,38 @@ function renderBill() {
   empty.style.display = 'none';
   totals.style.display = 'block';
 
-  list.innerHTML = billState.items.map((item, i) => {
-    const isLast = i === billState.items.length - 1;
-    return `<li class="${isLast ? 'highlight' : ''}" ${isLast ? 'id="lastItem"' : ''}>
-      <div class="item-name">${esc(item.name)}${item.name_hi && item.name_hi !== item.name ? '<small>' + esc(item.name_hi) + '</small>' : ''}</div>
-      <div class="item-qty">${item.quantity} ${esc(item.unit)} × ₹${item.price_per_unit}</div>
-      <div class="item-total">₹${item.total.toFixed(2)}</div>
-    </li>`;
+  list.innerHTML = billState.items.map(function(item, i) {
+    var isLast = (i === billState.items.length - 1);
+    var hiLabel = (item.name_hi && item.name_hi !== item.name) ? '<small>' + esc(item.name_hi) + '</small>' : '';
+    return '<li class="' + (isLast ? 'highlight' : '') + '"' + (isLast ? ' id="lastItem"' : '') + '>' +
+      '<div class="item-name">' + esc(item.name) + hiLabel + '</div>' +
+      '<div class="item-qty">' + item.quantity + ' ' + esc(item.unit) + ' × ₹' + item.price_per_unit + '</div>' +
+      '<div class="item-total">₹' + item.total.toFixed(2) + '</div>' +
+      '</li>';
   }).join('');
 
   document.getElementById('subtotalDisplay').textContent = '₹' + billState.subtotal.toFixed(2);
   document.getElementById('grandTotalDisplay').textContent = '₹' + billState.grandTotal.toFixed(2);
 
-  if (document.getElementById('lastItem')) {
-    setTimeout(() => {
-      const el = document.getElementById('lastItem');
+  var lastEl = document.getElementById('lastItem');
+  if (lastEl) {
+    setTimeout(function() {
+      var el = document.getElementById('lastItem');
       if (el) el.classList.remove('highlight');
     }, 1500);
   }
 }
 
 function esc(s) {
-  const d = document.createElement('div');
+  var d = document.createElement('div');
   d.textContent = s || '';
   return d.innerHTML;
 }
 
-// Speech Recognition
+/* ── Speech Recognition ── */
+
 function initSpeechRecognition() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
     speechSupported = false;
     return;
@@ -446,17 +505,17 @@ function initSpeechRecognition() {
   };
 
   recognition.onresult = function(e) {
-    let interim = '';
-    let final = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
+    var interim = '';
+    var final = '';
+    for (var i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) {
         final += e.results[i][0].transcript;
       } else {
         interim += e.results[i][0].transcript;
       }
     }
-    const bubble = document.getElementById('transcriptBubble');
-    const txt = document.getElementById('transcriptText');
+    var bubble = document.getElementById('transcriptBubble');
+    var txt = document.getElementById('transcriptText');
     if (interim) {
       txt.textContent = interim + '...';
       bubble.classList.add('visible');
@@ -488,7 +547,7 @@ function initSpeechRecognition() {
 
 function toggleMic() {
   if (!speechSupported) {
-    showToast('Voice not supported. Please use Chrome on Android or Desktop.', 'error');
+    showToast('Voice not supported in this browser. Please use Chrome on Android or Desktop.', 'error');
     return;
   }
   if (isRecording) {
@@ -496,18 +555,20 @@ function toggleMic() {
   } else {
     try {
       recognition.start();
-    } catch(e) {
+    } catch (e) {
       recognition.stop();
-      setTimeout(() => { try { recognition.start(); } catch(ex) {} }, 200);
+      setTimeout(function() {
+        try { recognition.start(); } catch (ex) {}
+      }, 200);
     }
   }
 }
 
 function showBadge(type) {
   if (type === 'listening') {
-    const bar = document.getElementById('statusBar');
+    var bar = document.getElementById('statusBar');
     if (!document.getElementById('badgeListening')) {
-      const b = document.createElement('span');
+      var b = document.createElement('span');
       b.className = 'badge badge-listening';
       b.id = 'badgeListening';
       b.textContent = 'Listening...';
@@ -518,13 +579,13 @@ function showBadge(type) {
 
 function hideBadge(type) {
   if (type === 'listening') {
-    const b = document.getElementById('badgeListening');
+    var b = document.getElementById('badgeListening');
     if (b) b.remove();
   }
 }
 
 function updateOnlineStatus() {
-  const badge = document.getElementById('badgeOnline');
+  var badge = document.getElementById('badgeOnline');
   if (navigator.onLine) {
     badge.className = 'badge badge-online';
     badge.textContent = 'Online';
@@ -534,50 +595,29 @@ function updateOnlineStatus() {
   }
 }
 
-// Process transcript
-async function processTranscript(text) {
-  if (!text) return;
+/* ── Process Transcript ── */
 
-  if (!navigator.onLine || !apiKey) {
-    processOffline(text);
-    return;
-  }
+async function processTranscript(text) {
+  if (!text || isProcessing) return;
+  isProcessing = true;
 
   try {
-    const systemPrompt = `You are a billing assistant for an Indian kirana/grocery store.
-Parse the shop owner's spoken input and extract items for a bill.
-The input may be in Hindi, English, or Hinglish.
-
-Respond ONLY with a valid JSON object. No other text, no markdown, no explanation.
-
-JSON format:
-{
-  "action": "add_items" | "remove_last" | "clear_all" | "print_bill" | "set_customer" | "none",
-  "items": [
-    {
-      "name": "Sugar",
-      "name_hi": "Cheeni",
-      "quantity": 1,
-      "unit": "kg",
-      "price_per_unit": 50,
-      "total": 50
+    if (!navigator.onLine || !apiKey) {
+      processOffline(text);
+      return;
     }
-  ],
-  "customer_name": null,
-  "message": "Brief 1-line confirmation in Hinglish"
+    await processWithClaude(text);
+  } catch (e) {
+    processOffline(text);
+  } finally {
+    isProcessing = false;
+  }
 }
 
-Rules for parsing:
-- Extract item name, quantity, unit (kg/g/litre/ml/packet/piece), and price
-- If only price is mentioned without unit, assume 1 piece
-- "hata do", "undo", "remove" → action: "remove_last"
-- "clear", "naya bill", "new bill" → action: "clear_all"
-- "total", "print", "bill banao", "receipt" → action: "print_bill"
-- Map Hindi item names to English for the bill display
-- If nothing parseable, action: "none"
-- Always calculate total = quantity × price_per_unit`;
-
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+async function processWithClaude(text) {
+  var resp;
+  try {
+    resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -588,80 +628,81 @@ Rules for parsing:
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 500,
-        system: systemPrompt,
+        system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: text }]
       })
     });
-
-    if (!resp.ok) {
-      const errBody = await resp.text();
-      if (resp.status === 401) {
-        showToast('API key galat hai. Settings mein sahi key daalein.', 'error');
-      } else {
-        showToast('Server se error aaya. Dobara try karein.', 'error');
-      }
-      processOffline(text);
-      return;
-    }
-
-    const data = await resp.json();
-    const content = data.content[0].text;
-
-    let parsed;
-    try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
-    } catch(e) {
-      showToast('Samajh nahi aaya. Dobara boliye.', 'error');
-      speak('Samajh nahi aaya. Dobara boliye.');
-      return;
-    }
-
-    applyParsedAction(parsed);
-
-  } catch(e) {
-    processOffline(text);
+  } catch (e) {
+    throw e;
   }
+
+  if (!resp.ok) {
+    if (resp.status === 401) {
+      showToast('API key galat hai. Settings mein sahi key daalein.', 'error');
+    } else {
+      showToast('Server se error aaya. Dobara try karein.', 'error');
+    }
+    processOffline(text);
+    return;
+  }
+
+  var data = await resp.json();
+  var content = data.content[0].text;
+
+  var parsed;
+  try {
+    var jsonMatch = content.match(/\{[\s\S]*\}/);
+    parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+  } catch (e) {
+    showToast('Samajh nahi aaya. Dobara boliye.', 'error');
+    speak('Samajh nahi aaya. Dobara boliye.');
+    return;
+  }
+
+  applyParsedAction(parsed);
 }
 
 function applyParsedAction(parsed) {
-  const action = parsed.action || 'none';
-  const msg = parsed.message || '';
+  var action = parsed.action || 'none';
+  var msg = parsed.message || '';
 
-  if (msg) {
-    showAiMessage(msg);
-  }
+  if (msg) showAiMessage(msg);
 
-  switch(action) {
+  switch (action) {
     case 'add_items':
       if (parsed.items && parsed.items.length > 0) {
-        parsed.items.forEach(item => {
+        parsed.items.forEach(function(item) {
+          var qty = item.quantity || 1;
+          var ppu = item.price_per_unit || 0;
+          var total = item.total || (qty * ppu);
           billState.items.push({
             name: item.name || 'Item',
             name_hi: item.name_hi || '',
-            quantity: item.quantity || 1,
+            quantity: qty,
             unit: item.unit || 'piece',
-            price_per_unit: item.price_per_unit || 0,
-            total: item.total || (item.quantity || 1) * (item.price_per_unit || 0)
+            price_per_unit: ppu,
+            total: total
           });
         });
         updateTotals();
         saveBillToStorage();
         renderBill();
-        const last = parsed.items[parsed.items.length - 1];
-        speak(last.name + ' add kiya. ' + (last.quantity || 1) + ' ' + (last.unit || 'piece') + ', ' + (last.total || 0) + ' rupaye.');
+        var last = parsed.items[parsed.items.length - 1];
+        speak((last.name || 'Item') + ' add kiya. ' + (last.quantity || 1) + ' ' + (last.unit || 'piece') + ', ' + (last.total || 0) + ' rupaye.');
+        scrollToBottom();
       }
       break;
 
     case 'remove_last':
       if (billState.items.length > 0) {
-        const removed = billState.items.pop();
+        var removed = billState.items.pop();
         updateTotals();
         saveBillToStorage();
         renderBill();
         speak('Last item remove kar diya. ' + removed.name);
       } else {
         speak('Bill mein koi item nahi hai.');
+        showToast('Bill mein koi item nahi hai.', 'error');
       }
       break;
 
@@ -683,25 +724,34 @@ function applyParsedAction(parsed) {
         billState.customerName = parsed.customer_name;
         saveBillToStorage();
         speak('Customer name set kiya: ' + parsed.customer_name);
+        showToast('Customer: ' + parsed.customer_name, 'success');
       }
       break;
 
     case 'none':
+    default:
       speak('Samajh nahi aaya. Dobara boliye.');
+      showToast('Samajh nahi aaya. Dobara boliye.', 'error');
       break;
   }
 }
 
-// Offline regex parser
+function scrollToBottom() {
+  var el = document.getElementById('lastItem');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* ── Offline Regex Parser ── */
+
 function processOffline(text) {
-  const lower = text.toLowerCase().trim();
+  var lower = text.toLowerCase().trim();
 
   if (/hata\s*do|undo|remove|nikal|hatao/.test(lower)) {
-    applyParsedAction({ action: 'remove_last', message: 'Last item hata diya (offline mode)' });
+    applyParsedAction({ action: 'remove_last', message: 'Last item hata diya (offline)' });
     return;
   }
   if (/naya\s*bill|new\s*bill|clear|saaf/.test(lower)) {
-    applyParsedAction({ action: 'clear_all', message: 'Naya bill (offline mode)' });
+    applyParsedAction({ action: 'clear_all', message: 'Naya bill (offline)' });
     return;
   }
   if (/print|bill\s*banao|receipt|total\s*karo/.test(lower)) {
@@ -709,37 +759,55 @@ function processOffline(text) {
     return;
   }
 
-  const patterns = [
+  var hindiNums = {
+    'ek': 1, 'do': 2, 'teen': 3, 'char': 4, 'paanch': 5, 'panch': 5,
+    'chhe': 6, 'saat': 7, 'aath': 8, 'nau': 9, 'das': 10,
+    'gyarah': 11, 'barah': 12, 'bees': 20, 'tees': 30, 'chalees': 40,
+    'pachaas': 50, 'sau': 100, 'hazaar': 1000, 'hazar': 1000
+  };
+
+  var cleaned = lower;
+  Object.keys(hindiNums).forEach(function(word) {
+    cleaned = cleaned.replace(new RegExp('\\b' + word + '\\b', 'g'), String(hindiNums[word]));
+  });
+
+  // Pattern: [item] [qty] [unit] [price]
+  var patterns = [
     /(.+?)\s+(\d+(?:\.\d+)?)\s*(kg|kilo|g|gram|litre|liter|l|ml|packet|packets|pkt|piece|pieces|pc|pcs|dozen)?\s*[,.]?\s*(?:(?:rs|rupay(?:e|a)?|₹|rupees?)?\s*)?(\d+(?:\.\d+)?)\s*(?:rs|rupay(?:e|a)?|₹|rupees?)?/i,
-    /(.+?)\s+(?:rs|rupay(?:e|a)?|₹|rupees?)\s*(\d+(?:\.\d+)?)/i
+    /(.+?)\s+(?:rs|rupay(?:e|a)?|₹|rupees?)\s*(\d+(?:\.\d+)?)/i,
+    /(.+?)\s+(\d+(?:\.\d+)?)\s*(?:rs|rupay(?:e|a)?|₹|rupees?)/i
   ];
 
-  let matched = false;
-  const m1 = lower.match(patterns[0]);
+  var matched = false;
+  var m1 = cleaned.match(patterns[0]);
   if (m1) {
-    const name = m1[1].trim().replace(/^(ek|do|teen|char)\s+/i, '');
-    const qty = parseFloat(m1[2]) || 1;
-    const unit = m1[3] || 'piece';
-    const price = parseFloat(m1[4]) || 0;
+    var name = m1[1].trim().replace(/^\d+\s*/, '');
+    if (!name) name = 'Item';
+    var qty = parseFloat(m1[2]) || 1;
+    var unit = normalizeUnit(m1[3] || 'piece');
+    var price = parseFloat(m1[4]) || 0;
     applyParsedAction({
       action: 'add_items',
-      items: [{ name: capitalize(name), name_hi: '', quantity: qty, unit: unit, price_per_unit: price / qty, total: price }],
-      message: capitalize(name) + ' add kiya (offline mode)'
+      items: [{ name: capitalize(name), name_hi: '', quantity: qty, unit: unit, price_per_unit: price, total: qty * price }],
+      message: capitalize(name) + ' add kiya (offline)'
     });
     matched = true;
   }
 
   if (!matched) {
-    const m2 = lower.match(patterns[1]);
-    if (m2) {
-      const name = m2[1].trim();
-      const price = parseFloat(m2[2]) || 0;
-      applyParsedAction({
-        action: 'add_items',
-        items: [{ name: capitalize(name), name_hi: '', quantity: 1, unit: 'piece', price_per_unit: price, total: price }],
-        message: capitalize(name) + ' add kiya (offline mode)'
-      });
-      matched = true;
+    for (var pi = 1; pi < patterns.length; pi++) {
+      var m = cleaned.match(patterns[pi]);
+      if (m) {
+        var n = m[1].trim().replace(/^\d+\s*/, '') || 'Item';
+        var pr = parseFloat(m[2]) || 0;
+        applyParsedAction({
+          action: 'add_items',
+          items: [{ name: capitalize(n), name_hi: '', quantity: 1, unit: 'piece', price_per_unit: pr, total: pr }],
+          message: capitalize(n) + ' add kiya (offline)'
+        });
+        matched = true;
+        break;
+      }
     }
   }
 
@@ -749,36 +817,48 @@ function processOffline(text) {
   }
 }
 
+function normalizeUnit(u) {
+  if (!u) return 'piece';
+  u = u.toLowerCase();
+  if (u === 'kilo') return 'kg';
+  if (u === 'gram') return 'g';
+  if (u === 'liter' || u === 'l') return 'litre';
+  if (u === 'pkt') return 'packet';
+  if (u === 'pc' || u === 'pcs') return 'piece';
+  return u;
+}
+
 function capitalize(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-// TTS
+/* ── Text-to-Speech ── */
+
 function speak(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
+  var u = new SpeechSynthesisUtterance(text);
   u.lang = 'hi-IN';
   u.rate = 1.05;
-  const voices = window.speechSynthesis.getVoices();
-  const hindiVoice = voices.find(v => v.lang.startsWith('hi') && v.name.toLowerCase().includes('female')) ||
-                     voices.find(v => v.lang.startsWith('hi')) ||
-                     null;
+  var voices = window.speechSynthesis.getVoices();
+  var hindiVoice = voices.find(function(v) { return v.lang.startsWith('hi') && v.name.toLowerCase().includes('female'); }) ||
+                   voices.find(function(v) { return v.lang.startsWith('hi'); }) ||
+                   null;
   if (hindiVoice) u.voice = hindiVoice;
   window.speechSynthesis.speak(u);
 }
 
-// Ensure voices are loaded
 if (window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = function() {};
   window.speechSynthesis.getVoices();
 }
 
-// Text input fallback
+/* ── Text Input Fallback ── */
+
 function handleTextInput(e) {
   e.preventDefault();
-  const input = document.getElementById('textInput');
-  const text = input.value.trim();
+  var input = document.getElementById('textInput');
+  var text = input.value.trim();
   if (!text) return;
   input.value = '';
 
@@ -788,7 +868,8 @@ function handleTextInput(e) {
   processTranscript(text);
 }
 
-// Actions
+/* ── Button Actions ── */
+
 function undoItem() {
   applyParsedAction({ action: 'remove_last', message: 'Last item hata diya' });
 }
@@ -807,9 +888,9 @@ function printBill() {
   buildReceipt();
   speak('Aapka bill print ho raha hai. Naya bill ke liye mic dabayein.');
 
-  setTimeout(() => {
+  setTimeout(function() {
     window.print();
-    setTimeout(() => {
+    setTimeout(function() {
       billState.billNumber++;
       localStorage.setItem(LS_PREFIX + 'billNumber', billState.billNumber);
       updateTopBar();
@@ -818,54 +899,65 @@ function printBill() {
 }
 
 function buildReceipt() {
-  const r = document.getElementById('receiptPrint');
-  let html = '';
-  html += `<div class="r-shop">${esc(billState.shopName)}</div>`;
-  html += `<div class="r-addr">${esc(billState.shopAddress)}</div>`;
-  if (billState.shopPhone) html += `<div class="r-phone">Ph: ${esc(billState.shopPhone)}</div>`;
-  if (billState.shopGST) html += `<div class="r-gst">GST: ${esc(billState.shopGST)}</div>`;
-  html += `<div class="r-line"></div>`;
-  html += `<div class="r-meta">Bill No: ${String(billState.billNumber).padStart(3,'0')}&nbsp;&nbsp;Date: ${billState.billDate}</div>`;
-  if (billState.customerName) html += `<div class="r-meta">Customer: ${esc(billState.customerName)}</div>`;
-  html += `<div class="r-line"></div>`;
-  html += `<div class="r-header"><span>ITEM</span><span>QTY</span><span>RATE</span><span>AMT</span></div>`;
+  var r = document.getElementById('receiptPrint');
+  var html = '';
 
-  billState.items.forEach(item => {
-    html += `<div class="r-item">
-      <span class="r-item-left">${esc(item.name)}<br><span class="r-item-detail">${item.quantity}${esc(item.unit)} × ₹${item.price_per_unit}</span></span>
-      <span>₹${item.total.toFixed(2)}</span>
-    </div>`;
+  html += '<div class="r-shop">' + esc(billState.shopName) + '</div>';
+  html += '<div class="r-addr">' + esc(billState.shopAddress) + '</div>';
+  if (billState.shopPhone) html += '<div class="r-phone">Ph: ' + esc(billState.shopPhone) + '</div>';
+  if (billState.shopGST) html += '<div class="r-gst">GST: ' + esc(billState.shopGST) + '</div>';
+  html += '<div class="r-line"></div>';
+  html += '<div class="r-meta">Bill No: ' + String(billState.billNumber).padStart(3, '0') + '&nbsp;&nbsp;&nbsp;Date: ' + billState.billDate + '</div>';
+  if (billState.customerName) html += '<div class="r-meta">Customer: ' + esc(billState.customerName) + '</div>';
+  html += '<div class="r-line"></div>';
+
+  html += '<table>';
+  html += '<tr><th>ITEM</th><th>QTY</th><th>RATE</th><th>AMT</th></tr>';
+  billState.items.forEach(function(item) {
+    html += '<tr>';
+    html += '<td>' + esc(item.name) + '</td>';
+    html += '<td>' + item.quantity + item.unit + '</td>';
+    html += '<td>₹' + item.price_per_unit + '</td>';
+    html += '<td>₹' + item.total.toFixed(2) + '</td>';
+    html += '</tr>';
   });
+  html += '</table>';
 
-  html += `<div class="r-totals">`;
-  html += `<div>Subtotal: ₹${billState.subtotal.toFixed(2)}</div>`;
-  html += `<div class="r-grand">Total: ₹${billState.grandTotal.toFixed(2)}</div>`;
-  html += `</div>`;
-  html += `<div class="r-footer">${esc(billState.footerMsg)} 🙏</div>`;
+  html += '<div class="r-totals">';
+  html += '<div>Subtotal: ₹' + billState.subtotal.toFixed(2) + '</div>';
+  html += '<div class="r-grand">Total: ₹' + billState.grandTotal.toFixed(2) + '</div>';
+  html += '</div>';
+
+  html += '<div class="r-footer">';
+  html += 'Thank you! Aapka shukriya<br>';
+  html += esc(billState.footerMsg) + ' 🙏';
+  html += '</div>';
 
   r.innerHTML = html;
 }
 
-// UI Helpers
+/* ── UI Helpers ── */
+
 function showAiMessage(msg) {
-  const el = document.getElementById('aiMessage');
+  var el = document.getElementById('aiMessage');
   el.textContent = msg;
   el.classList.add('visible');
-  setTimeout(() => el.classList.remove('visible'), 4000);
+  setTimeout(function() { el.classList.remove('visible'); }, 4000);
 }
 
 function showToast(msg, type) {
-  const t = document.getElementById('toast');
+  var t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast ' + (type || '') + ' show';
-  setTimeout(() => t.classList.remove('show'), 3000);
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
 }
 
 function toggleAbout() {
   document.getElementById('aboutTooltip').classList.toggle('visible');
 }
 
-// Settings
+/* ── Settings ── */
+
 function openSettings() {
   document.getElementById('setShopName').value = billState.shopName;
   document.getElementById('setShopAddr').value = billState.shopAddress;
@@ -903,7 +995,7 @@ function saveSettings() {
 }
 
 function saveApiKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
+  var key = document.getElementById('apiKeyInput').value.trim();
   if (!key) {
     showToast('API key daalein', 'error');
     return;
@@ -915,7 +1007,7 @@ function saveApiKey() {
 }
 
 function saveApiKeyFromSettings() {
-  const key = document.getElementById('setApiKey').value.trim();
+  var key = document.getElementById('setApiKey').value.trim();
   if (!key) {
     showToast('API key daalein', 'error');
     return;
@@ -927,14 +1019,13 @@ function saveApiKeyFromSettings() {
 
 function clearAllData() {
   if (confirm('Sab data clear ho jayega. Are you sure?')) {
-    Object.keys(localStorage).forEach(k => {
+    Object.keys(localStorage).forEach(function(k) {
       if (k.startsWith(LS_PREFIX)) localStorage.removeItem(k);
     });
     location.reload();
   }
 }
 
-// Init on load
 window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
