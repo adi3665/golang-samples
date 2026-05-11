@@ -600,6 +600,7 @@ function updateOnlineStatus() {
 async function processTranscript(text) {
   if (!text || isProcessing) return;
   isProcessing = true;
+  showProcessing(true);
 
   try {
     if (!navigator.onLine || !apiKey) {
@@ -611,6 +612,27 @@ async function processTranscript(text) {
     processOffline(text);
   } finally {
     isProcessing = false;
+    showProcessing(false);
+  }
+}
+
+function showProcessing(on) {
+  var bar = document.getElementById('statusBar');
+  var existing = document.getElementById('badgeProcessing');
+  if (on) {
+    if (!existing) {
+      var b = document.createElement('span');
+      b.className = 'badge badge-listening';
+      b.id = 'badgeProcessing';
+      b.textContent = 'Processing...';
+      bar.appendChild(b);
+    }
+    document.getElementById('micBtn').style.opacity = '0.5';
+    document.getElementById('micBtn').style.pointerEvents = 'none';
+  } else {
+    if (existing) existing.remove();
+    document.getElementById('micBtn').style.opacity = '';
+    document.getElementById('micBtn').style.pointerEvents = '';
   }
 }
 
@@ -767,8 +789,21 @@ function processOffline(text) {
   };
 
   var cleaned = lower;
+  // Handle compound Hindi numbers: "do sau" → 200, "teen hazaar" → 3000, "paanch sau pachaas" → 550
+  cleaned = cleaned.replace(/\b(ek|do|teen|char|paanch|panch|chhe|saat|aath|nau|das|gyarah|barah|bees|tees|chalees|pachaas)\s+(hazaar|hazar)\b/gi, function(_, n) {
+    return String((hindiNums[n.toLowerCase()] || 1) * 1000);
+  });
+  cleaned = cleaned.replace(/\b(ek|do|teen|char|paanch|panch|chhe|saat|aath|nau|das|gyarah|barah|bees|tees|chalees|pachaas)\s+(sau)\b/gi, function(_, n) {
+    return String((hindiNums[n.toLowerCase()] || 1) * 100);
+  });
   Object.keys(hindiNums).forEach(function(word) {
     cleaned = cleaned.replace(new RegExp('\\b' + word + '\\b', 'g'), String(hindiNums[word]));
+  });
+  // Combine adjacent numbers separated by space for remaining compound forms: "200 50" → "250"
+  cleaned = cleaned.replace(/(\d+)\s+(\d+)(?!\s*(?:kg|kilo|g|gram|litre|liter|l|ml|packet|packets|pkt|piece|pieces|pc|pcs|dozen|rs|rupay))/gi, function(_, a, b) {
+    var na = parseInt(a), nb = parseInt(b);
+    if (na >= 100 && nb < 100) return String(na + nb);
+    return a + ' ' + b;
   });
 
   // Pattern: [item] [qty] [unit] [price]
@@ -840,17 +875,20 @@ function speak(text) {
   var u = new SpeechSynthesisUtterance(text);
   u.lang = 'hi-IN';
   u.rate = 1.05;
-  var voices = window.speechSynthesis.getVoices();
-  var hindiVoice = voices.find(function(v) { return v.lang.startsWith('hi') && v.name.toLowerCase().includes('female'); }) ||
-                   voices.find(function(v) { return v.lang.startsWith('hi'); }) ||
-                   null;
-  if (hindiVoice) u.voice = hindiVoice;
+  if (cachedHindiVoice) u.voice = cachedHindiVoice;
   window.speechSynthesis.speak(u);
 }
 
+var cachedHindiVoice = null;
 if (window.speechSynthesis) {
-  window.speechSynthesis.onvoiceschanged = function() {};
-  window.speechSynthesis.getVoices();
+  function cacheHindiVoice() {
+    var voices = window.speechSynthesis.getVoices();
+    cachedHindiVoice = voices.find(function(v) { return v.lang.startsWith('hi') && v.name.toLowerCase().includes('female'); }) ||
+                       voices.find(function(v) { return v.lang.startsWith('hi'); }) ||
+                       null;
+  }
+  window.speechSynthesis.onvoiceschanged = cacheHindiVoice;
+  cacheHindiVoice();
 }
 
 /* ── Text Input Fallback ── */
@@ -916,7 +954,7 @@ function buildReceipt() {
   billState.items.forEach(function(item) {
     html += '<tr>';
     html += '<td>' + esc(item.name) + '</td>';
-    html += '<td>' + item.quantity + item.unit + '</td>';
+    html += '<td>' + item.quantity + ' ' + item.unit + '</td>';
     html += '<td>₹' + item.price_per_unit + '</td>';
     html += '<td>₹' + item.total.toFixed(2) + '</td>';
     html += '</tr>';
