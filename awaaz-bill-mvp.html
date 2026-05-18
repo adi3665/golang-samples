@@ -550,6 +550,8 @@ var SYSTEM_PROMPT = 'You are a billing assistant for an Indian kirana/grocery st
   '- Map Hindi item names to English for the name field, keep Hindi in name_hi\n' +
   '- Calculate total = quantity * price_per_unit\n' +
   '- If multiple items in one utterance, include all in items array\n' +
+  '- For price correction ("nahi 250 ka tha"), use action "remove_last" first, then the corrected item goes into items[]\n' +
+  '- For quantity update ("do kilo karo"), update context: remove_last + add corrected item with new quantity\n' +
   '- If nothing parseable, action: "none", message: "Samajh nahi aaya, dobara bolein"';
 
 async function processTranscript(text) {
@@ -636,8 +638,13 @@ function applyAction(parsed) {
 
     case 'remove_last':
       removeLastItem();
+      if (parsed.items && parsed.items.length > 0) {
+        addItems(parsed.items);
+        speak(parsed.message || 'Item correct karke add kiya.');
+      } else {
+        speak(parsed.message || 'Last item remove kar diya.');
+      }
       if (parsed.message) showAiMsg(parsed.message);
-      speak(parsed.message || 'Last item remove kar diya.');
       break;
 
     case 'clear_all':
@@ -779,9 +786,12 @@ function updateTotals() {
 
 // Button handlers with speech feedback
 function handleUndo() {
-  removeLastItem();
-  if (billState.items.length >= 0) {
+  if (billState.items.length > 0) {
+    removeLastItem();
     speak('Last item remove kar diya.');
+  } else {
+    showToast('Koi item nahi hai remove karne ko.');
+    speak('Bill mein koi item nahi hai.');
   }
 }
 
@@ -872,7 +882,7 @@ function printBill() {
   var tbody = '';
   for (var i = 0; i < billState.items.length; i++) {
     var item = billState.items[i];
-    var qtyLabel = item.quantity + item.unit.charAt(0);
+    var qtyLabel = item.quantity + (item.unit ? item.unit.charAt(0) : 'p');
     tbody += '<tr>' +
       '<td>' + escapeHtml(item.name) + '</td>' +
       '<td>' + qtyLabel + '</td>' +
