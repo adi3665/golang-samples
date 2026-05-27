@@ -661,6 +661,12 @@ Rules for parsing:
   const codeBlockMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (codeBlockMatch) jsonStr = codeBlockMatch[1].trim();
 
+  const braceStart = jsonStr.indexOf('{');
+  const braceEnd = jsonStr.lastIndexOf('}');
+  if (braceStart !== -1 && braceEnd > braceStart) {
+    jsonStr = jsonStr.substring(braceStart, braceEnd + 1);
+  }
+
   return JSON.parse(jsonStr);
 }
 
@@ -888,53 +894,115 @@ function generateReceipt() {
   html += '</div>';
 
   html += '<div class="r-line"></div>';
-  html += '<div class="r-footer">Thank you! Aapka shukriya<br>' + escapeHtml(billState.footerMsg) + '</div>';
+  html += '<div class="r-footer">Thank you! Aapka shukriya<br>' + escapeHtml(billState.footerMsg) + ' 🙏</div>';
   r.innerHTML = html;
+}
+
+// ── Hindi Number Word Parser ──
+function parseHindiNumber(str) {
+  str = str.trim().toLowerCase();
+  const digitMatch = str.match(/^\d+\.?\d*$/);
+  if (digitMatch) return parseFloat(str);
+
+  const words = {
+    'ek': 1, 'एक': 1, 'do': 2, 'दो': 2, 'teen': 3, 'tin': 3, 'तीन': 3,
+    'chaar': 4, 'char': 4, 'चार': 4, 'paanch': 5, 'panch': 5, 'पांच': 5, 'पाँच': 5,
+    'chhah': 6, 'chhe': 6, 'che': 6, 'छह': 6, 'saat': 7, 'sat': 7, 'सात': 7,
+    'aath': 8, 'aat': 8, 'आठ': 8, 'nau': 9, 'नौ': 9,
+    'das': 10, 'दस': 10, 'gyarah': 11, 'ग्यारह': 11, 'barah': 12, 'बारह': 12,
+    'terah': 13, 'तेरह': 13, 'chaudah': 14, 'चौदह': 14, 'pandrah': 15, 'पंद्रह': 15,
+    'solah': 16, 'सोलह': 16, 'satrah': 17, 'सत्रह': 17, 'atharah': 18, 'अठारह': 18,
+    'unees': 19, 'उन्नीस': 19, 'bees': 20, 'बीस': 20,
+    'pachees': 25, 'पच्चीस': 25, 'tees': 30, 'तीस': 30,
+    'paintees': 35, 'पैंतीस': 35, 'chaalees': 40, 'chalees': 40, 'चालीस': 40,
+    'pachaas': 50, 'पचास': 50, 'saath': 60, 'साठ': 60,
+    'sattar': 70, 'सत्तर': 70, 'assi': 80, 'अस्सी': 80,
+    'nabbe': 90, 'नब्बे': 90,
+    'dedh': 1.5, 'डेढ़': 1.5, 'dhai': 2.5, 'ढाई': 2.5, 'adha': 0.5, 'aadha': 0.5, 'आधा': 0.5,
+    'paav': 0.25, 'pav': 0.25, 'पाव': 0.25, 'pauna': 0.75, 'पौना': 0.75
+  };
+
+  const multipliers = {
+    'sau': 100, 'so': 100, 'सौ': 100, 'hazaar': 1000, 'hazar': 1000, 'हजार': 1000, 'हज़ार': 1000
+  };
+
+  if (words[str] !== undefined) return words[str];
+
+  const parts = str.split(/\s+/);
+  let total = 0;
+  let current = 0;
+  let hasValue = false;
+
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i];
+    if (words[p] !== undefined) {
+      current = words[p];
+      hasValue = true;
+    } else if (multipliers[p] !== undefined) {
+      current = (current || 1) * multipliers[p];
+      total += current;
+      current = 0;
+      hasValue = true;
+    } else if (/^\d+\.?\d*$/.test(p)) {
+      current = parseFloat(p);
+      hasValue = true;
+    }
+  }
+  total += current;
+  return hasValue ? total : null;
+}
+
+function replaceHindiNumbers(text) {
+  return text.replace(/[०-९]/g, d => '०१२३४५६७८९'.indexOf(d));
 }
 
 // ── Offline Parser ──
 function offlineParse(text) {
+  text = replaceHindiNumbers(text);
   const lower = text.toLowerCase().trim();
 
-  if (/\b(hata|undo|remove|delete|hatao)\b/.test(lower)) {
+  if (/\b(hata|undo|remove|delete|hatao|हटा|हटाओ|last.*hata|woh.*hata)\b/.test(lower)) {
     return { action: 'remove_last', items: [], customer_name: null, message: 'Last item remove kiya.' };
   }
-  if (/\b(clear|naya bill|new bill|reset|saaf)\b/.test(lower)) {
+  if (/\b(clear|naya bill|new bill|reset|saaf|नया बिल|साफ)\b/.test(lower)) {
     return { action: 'clear_all', items: [], customer_name: null, message: 'Naya bill shuru.' };
   }
-  if (/\b(print|total|bill banao|receipt|bill bana|छाप|प्रिंट)\b/.test(lower)) {
+  if (/\b(print|total|bill banao|receipt|bill bana|total karo|छाप|प्रिंट|बिल बनाओ|टोटल)\b/.test(lower)) {
     return { action: 'print_bill', items: [], customer_name: null, message: 'Bill print ho raha hai.' };
   }
 
   const items = [];
-  const segments = text.split(/\baur\b|\band\b|,/i);
+  const segments = text.split(/\baur\b|\band\b|\bऔर\b|,/i);
 
   segments.forEach(seg => {
     seg = seg.trim();
     if (!seg) return;
 
+    const unitPat = '(kg|kilo|gram|g|litre|liter|l|ml|packet|packets|piece|pieces|pcs|dana|bottle|बोतल|पैकेट|किलो|ग्राम|लीटर)';
+    const pricePat = '(rupay|rupaye|rupees|rs|₹|रुपय|रुपये|रूपए|ka|ke|ki)';
+
     const patterns = [
-      /(.+?)\s+(\d+\.?\d*)\s*(kg|kilo|gram|g|litre|liter|l|ml|packet|packets|piece|pieces|pcs|dana|bottle)\w*\s+(\d+\.?\d*)\s*(rupay|rupaye|rupees|rs|₹|रुपय)?\w*/i,
-      /(.+?)\s+(\d+\.?\d*)\s*(rupay|rupaye|rupees|rs|₹|रुपय)\w*/i,
-      /(.+?)\s+(\d+\.?\d*)\s*(kg|kilo|gram|g|litre|liter|l|ml|packet|packets|piece|pieces|pcs|dana|bottle)\w*\s*$/i
+      new RegExp('(.+?)\\s+([\\d\\.]+|[a-zA-Z\\u0900-\\u097F]+)\\s*' + unitPat + '\\w*\\s+([\\d\\.]+|[a-zA-Z\\u0900-\\u097F\\s]+?)\\s*' + pricePat + '?\\w*\\s*$', 'i'),
+      new RegExp('(.+?)\\s+([\\d\\.]+|[a-zA-Z\\u0900-\\u097F\\s]+?)\\s*' + pricePat + '\\w*\\s*$', 'i'),
+      new RegExp('(.+?)\\s+([\\d\\.]+|[a-zA-Z\\u0900-\\u097F]+)\\s*' + unitPat + '\\w*\\s*$', 'i')
     ];
 
-    for (const pat of patterns) {
-      const m = seg.match(pat);
+    for (let pi = 0; pi < patterns.length; pi++) {
+      const m = seg.match(patterns[pi]);
       if (m) {
-        if (pat === patterns[0]) {
+        if (pi === 0) {
           const name = m[1].trim();
-          const qty = parseFloat(m[2]);
+          const qty = parseHindiNumber(m[2]) || 1;
           const unit = normalizeUnit(m[3]);
-          const price = parseFloat(m[4]);
-          items.push({ name, name_hi: name, quantity: qty, unit, price_per_unit: price / qty, total: price });
-        } else if (pat === patterns[1]) {
+          const price = parseHindiNumber(m[4]) || 0;
+          items.push({ name, name_hi: name, quantity: qty, unit, price_per_unit: qty > 0 ? price / qty : price, total: price });
+        } else if (pi === 1) {
           const name = m[1].trim();
-          const price = parseFloat(m[2]);
+          const price = parseHindiNumber(m[2]) || 0;
           items.push({ name, name_hi: name, quantity: 1, unit: 'piece', price_per_unit: price, total: price });
         } else {
           const name = m[1].trim();
-          const qty = parseFloat(m[2]);
+          const qty = parseHindiNumber(m[2]) || 1;
           const unit = normalizeUnit(m[3]);
           items.push({ name, name_hi: name, quantity: qty, unit, price_per_unit: 0, total: 0 });
         }
@@ -951,13 +1019,13 @@ function offlineParse(text) {
 
 function normalizeUnit(u) {
   u = u.toLowerCase();
-  if (/^(kg|kilo)/.test(u)) return 'kg';
-  if (/^(g|gram)/.test(u)) return 'g';
-  if (/^(l|litre|liter)/.test(u)) return 'litre';
+  if (/^(kg|kilo|किलो)/.test(u)) return 'kg';
+  if (/^(g|gram|ग्राम)/.test(u)) return 'g';
+  if (/^(l|litre|liter|लीटर)/.test(u)) return 'litre';
   if (/^(ml)/.test(u)) return 'ml';
-  if (/^(packet|packets)/.test(u)) return 'packet';
+  if (/^(packet|packets|पैकेट)/.test(u)) return 'packet';
   if (/^(piece|pieces|pcs|dana)/.test(u)) return 'piece';
-  if (/^(bottle)/.test(u)) return 'bottle';
+  if (/^(bottle|बोतल)/.test(u)) return 'bottle';
   return u;
 }
 
