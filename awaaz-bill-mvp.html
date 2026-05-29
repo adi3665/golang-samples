@@ -33,7 +33,7 @@ html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;ba
 .topbar .shop-name{font-size:18px;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topbar .bill-meta{font-size:13px;color:var(--text2);margin-top:2px}
 .topbar .actions{display:flex;gap:8px;flex-shrink:0}
-.topbar .actions button{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;transition:background 0.15s}
+.topbar .actions button{background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:10px;transition:background 0.15s}
 .topbar .actions button:hover{background:rgba(255,255,255,0.05)}
 
 /* ── Main Content ── */
@@ -114,7 +114,7 @@ html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;ba
 .settings-panel{background:var(--bg2);width:100%;max-width:600px;max-height:85vh;border-radius:20px 20px 0 0;padding:24px;overflow-y:auto;animation:slideUp 0.3s ease}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .settings-panel h2{color:var(--accent);font-size:20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
-.settings-panel .close-btn{background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:10px}
+.settings-panel .close-btn{background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:10px}
 .settings-panel .close-btn:hover{background:rgba(255,255,255,0.05)}
 .field{margin-bottom:16px}
 .field label{display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:600}
@@ -304,7 +304,7 @@ html,body{height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;ba
     </div>
     <div class="field">
       <label>Receipt Footer Message</label>
-      <input type="text" id="setFooter" placeholder="Dobara padharen!">
+      <input type="text" id="setFooter" placeholder="Dobara padharen! 🙏">
     </div>
     <div class="field">
       <label>Claude API Key</label>
@@ -331,7 +331,7 @@ let billState = {
   shopAddress: 'MG Road, Bengaluru',
   shopPhone: '98765 43210',
   shopGST: '',
-  footerMsg: 'Dobara padharen!',
+  footerMsg: 'Dobara padharen! 🙏',
   customerName: '',
   billNumber: 1,
   billDate: formatDate(new Date()),
@@ -628,7 +628,9 @@ Rules for parsing:
 - Map Hindi item names to English for the bill display
 - If nothing parseable, action: "none" with a helpful message
 - Handle multiple items in one sentence separated by "aur", commas, or context
-- Calculate total = quantity * price_per_unit correctly`;
+- Calculate total = quantity * price_per_unit correctly
+- For price corrections like "nahi nahi, sugar 250 ka tha" or "price galat hai" → use action "remove_last" and include corrected item in "items" array so the old item is removed and the corrected one is added
+- For quantity updates like "do kilo karo" referring to the last item → use action "remove_last" and include the updated item in "items" array`;
 
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -685,7 +687,12 @@ function applyParsedResult(parsed) {
 
     case 'remove_last':
       removeLastItem();
-      speak(parsed.message || 'Last item remove kar diya.');
+      if (parsed.items && parsed.items.length > 0) {
+        addItems(parsed.items);
+        speak(parsed.message || 'Item correct kar diya.');
+      } else {
+        speak(parsed.message || 'Last item remove kar diya.');
+      }
       break;
 
     case 'clear_all':
@@ -767,22 +774,19 @@ function renderBill() {
 
   if (billState.items.length === 0) {
     container.innerHTML = '<div class="bill-empty"><span class="icon">&#127908;</span>Mic dabayein aur items bolein<br><small style="color:var(--text2);font-size:13px">"Sugar ek kilo do sau rupaye"</small></div>';
-    document.getElementById('billTotals').style.display = 'none';
-    return;
+  } else {
+    let html = '';
+    billState.items.forEach((item, i) => {
+      const qtyStr = item.quantity + (item.unit ? ' ' + item.unit : '');
+      html += '<div class="bill-row" data-index="' + i + '">' +
+        '<span class="item-name">' + escapeHtml(item.name) + '</span>' +
+        '<span class="item-qty">' + escapeHtml(qtyStr) + '</span>' +
+        '<span class="item-rate">&#8377;' + formatNum(item.price_per_unit) + '</span>' +
+        '<span class="item-total">&#8377;' + formatNum(item.total) + '</span>' +
+        '</div>';
+    });
+    container.innerHTML = html;
   }
-
-  document.getElementById('billTotals').style.display = '';
-  let html = '';
-  billState.items.forEach((item, i) => {
-    const qtyStr = item.quantity + (item.unit ? ' ' + item.unit : '');
-    html += '<div class="bill-row" data-index="' + i + '">' +
-      '<span class="item-name">' + escapeHtml(item.name) + '</span>' +
-      '<span class="item-qty">' + escapeHtml(qtyStr) + '</span>' +
-      '<span class="item-rate">&#8377;' + formatNum(item.price_per_unit) + '</span>' +
-      '<span class="item-total">&#8377;' + formatNum(item.total) + '</span>' +
-      '</div>';
-  });
-  container.innerHTML = html;
 
   document.getElementById('subtotalDisplay').innerHTML = '&#8377;' + formatNum(billState.subtotal);
   document.getElementById('grandTotalDisplay').innerHTML = '&#8377;' + formatNum(billState.grandTotal);
@@ -1009,7 +1013,7 @@ function saveSettings() {
   billState.shopAddress = document.getElementById('setShopAddress').value.trim();
   billState.shopPhone = document.getElementById('setShopPhone').value.trim();
   billState.shopGST = document.getElementById('setShopGST').value.trim();
-  billState.footerMsg = document.getElementById('setFooter').value.trim() || 'Dobara padharen!';
+  billState.footerMsg = document.getElementById('setFooter').value.trim() || 'Dobara padharen! 🙏';
 
   const newKey = document.getElementById('setApiKey').value.trim();
   if (newKey && newKey !== apiKey) {
