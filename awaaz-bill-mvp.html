@@ -961,7 +961,7 @@ function buildReceipt() {
     const tr = document.createElement('tr');
     tr.innerHTML =
       '<td>' + esc(item.name) + '</td>' +
-      '<td>' + item.quantity + esc(item.unit) + '</td>' +
+      '<td>' + item.quantity + ' ' + esc(item.unit) + '</td>' +
       '<td>' + fmt(item.price_per_unit) + '</td>' +
       '<td>' + fmt(item.total) + '</td>';
     rb.appendChild(tr);
