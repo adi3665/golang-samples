@@ -137,7 +137,7 @@ html, body {
   margin-left: 12px;
 }
 .icon-btn {
-  width: 44px; height: 44px;
+  width: 48px; height: 48px;
   display: flex; align-items: center; justify-content: center;
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -219,7 +219,7 @@ html, body {
   animation: highlightRow 1.5s ease-out;
 }
 @keyframes highlightRow {
-  0% { background: rgba(245,166,35,0.3); }
+  0% { background: rgba(255,191,0,0.35); }
   100% { background: transparent; }
 }
 
@@ -330,7 +330,7 @@ html, body {
   width: 72px; height: 72px;
   border-radius: 50%;
   border: 3px solid var(--success);
-  background: var(--bg-card);
+  background: rgba(39, 174, 96, 0.15);
   color: var(--success);
   font-size: 32px;
   display: flex; align-items: center; justify-content: center;
@@ -711,6 +711,7 @@ var billState = {
   billDate: formatDate(new Date()),
   items: [],
   subtotal: 0,
+  discount: 0,
   grandTotal: 0
 };
 
@@ -1191,41 +1192,53 @@ function offlineParse(transcript) {
     return isNaN(n) ? null : n;
   }
 
+  var parts = t.split(/\s+aur\s+|\s*,\s*/);
+  var allItems = [];
+
   var patterns = [
     /(.+?)\s+(\d+|ek|do|teen|char|paanch|chhe|saat|aath|nau|das)\s*(kg|kilo|gram|g|litre|liter|l|ml|packet|packets|piece|pieces|pcs|dana|tukda)\s*,?\s*(\d+|ek|do|teen|char|paanch|das|bees|tees|pachaas|sau|do sau|teen sau|paanch sau|hazaar)\s*(?:rupaye|rupee|rs)?/i,
     /(.+?)\s+(\d+|ek|do|teen|char|paanch)\s*(kg|kilo|gram|g|packet|packets|piece|pieces)\s+(\d+)\s*(?:rupaye|rupee|rs)?/i,
     /(.+?)\s+(\d+)\s*(?:rupaye|rupee|rs)/i
   ];
 
-  for (var p = 0; p < patterns.length; p++) {
-    var m = t.match(patterns[p]);
-    if (m) {
-      var name = m[1].trim().replace(/^aur\s+/i, '');
-      name = name.charAt(0).toUpperCase() + name.slice(1);
-      var qty, unit, price;
-      if (m.length >= 5) {
-        qty = parseHindiNum(m[2]) || 1;
-        unit = normalizeUnit(m[3]);
-        price = parseHindiNum(m[4]) || 0;
-      } else {
-        qty = 1;
-        unit = 'piece';
-        price = parseHindiNum(m[2]) || 0;
-      }
-      return {
-        action: 'add_items',
-        items: [{
+  for (var pi = 0; pi < parts.length; pi++) {
+    var part = parts[pi].trim();
+    if (!part) continue;
+    for (var p = 0; p < patterns.length; p++) {
+      var m = part.match(patterns[p]);
+      if (m) {
+        var name = m[1].trim().replace(/^aur\s+/i, '');
+        name = name.charAt(0).toUpperCase() + name.slice(1);
+        var qty, unit, price;
+        if (m.length >= 5) {
+          qty = parseHindiNum(m[2]) || 1;
+          unit = normalizeUnit(m[3]);
+          price = parseHindiNum(m[4]) || 0;
+        } else {
+          qty = 1;
+          unit = 'piece';
+          price = parseHindiNum(m[2]) || 0;
+        }
+        allItems.push({
           name: name,
           name_hi: name,
           quantity: qty,
           unit: unit,
           price_per_unit: price,
           total: qty * price
-        }],
-        customer_name: null,
-        message: name + ' add kiya'
-      };
+        });
+        break;
+      }
     }
+  }
+
+  if (allItems.length > 0) {
+    return {
+      action: 'add_items',
+      items: allItems,
+      customer_name: null,
+      message: allItems.length + ' items add kiye'
+    };
   }
 
   return { action: 'none', items: [], customer_name: null, message: '' };
@@ -1334,8 +1347,8 @@ window.printBill = function() {
       esc(billState.footerMessage) +
     '</div>';
 
-  speak('Bill print ho raha hai. Naya bill ke liye mic dabayein.');
-  window.print();
+  speak('Aapka bill print ho raha hai. Naya bill ke liye mic dabayein.');
+  setTimeout(function() { window.print(); }, 500);
 
   billState.billNumber++;
   billState.items = [];
