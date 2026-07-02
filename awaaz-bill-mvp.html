@@ -837,7 +837,6 @@ function applyAction(result) {
       break;
     case 'print_bill':
       printBill();
-      speak(msg || 'Bill print ho raha hai.');
       break;
     case 'set_customer':
       if (result.customer_name) {
@@ -855,13 +854,14 @@ function applyAction(result) {
 
 // ===== BILL OPERATIONS =====
 function addItems(items) {
+  var highlightFrom = billState.items.length;
   items.forEach(function(item) {
     item.total = Number(item.total) || (Number(item.price_per_unit) * Number(item.quantity));
     item.price_per_unit = Number(item.price_per_unit) || (Number(item.total) / Number(item.quantity));
     billState.items.push(item);
   });
   updateTotals();
-  renderItems(true);
+  renderItems(highlightFrom);
 }
 
 function removeLastItem() {
@@ -885,8 +885,10 @@ function clearAll() {
   billState.customerName = '';
   billState.subtotal = 0;
   billState.grandTotal = 0;
+  billState.billDate = formatDate(new Date());
   updateTotals();
   renderItems();
+  updateDateDisplay();
   document.getElementById('aiMsg').textContent = '';
   document.getElementById('transcriptBubble').style.display = 'none';
   showToast('Naya bill shuru!', 1500);
@@ -898,7 +900,7 @@ function updateTotals() {
 }
 
 // ===== RENDER ITEMS =====
-function renderItems(highlightLast) {
+function renderItems(highlightFrom) {
   var table = document.getElementById('itemsTable');
   var rows = table.querySelectorAll('.row:not(.header)');
   rows.forEach(function(r) { r.remove(); });
@@ -917,7 +919,7 @@ function renderItems(highlightLast) {
 
   billState.items.forEach(function(item, idx) {
     var row = document.createElement('div');
-    row.className = 'row' + (highlightLast && idx === billState.items.length - 1 ? ' highlight' : '');
+    row.className = 'row' + (typeof highlightFrom === 'number' && idx >= highlightFrom ? ' highlight' : '');
 
     var qtyStr = item.quantity + (item.unit ? ' ' + item.unit : '');
 
@@ -989,9 +991,11 @@ function printBill() {
   setTimeout(function() {
     window.print();
     billState.billNumber++;
+    billState.billDate = formatDate(new Date());
     saveBillNumber();
     updateDateDisplay();
     showToast('Bill #' + String(billState.billNumber - 1).padStart(3, '0') + ' print hua. Naya bill ready.', 3000);
+    speak('Aapka bill print ho raha hai. Naya bill ke liye mic dabayein.');
   }, 100);
 }
 
