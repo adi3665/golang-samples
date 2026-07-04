@@ -498,7 +498,7 @@ input{font-family:inherit;font-size:1rem}
   function formatDate(d) {
     var day = d.getDate();
     var month = d.getMonth() + 1;
-    var year = d.getFullYear();
+    var year = d.getFullYear() % 100;
     return day + '/' + month + '/' + year;
   }
 
@@ -822,49 +822,70 @@ input{font-family:inherit;font-size:1rem}
   }
 
   // ─── OFFLINE FALLBACK PARSER ───
+  var hindiNums = {
+    'ek':1,'do':2,'teen':3,'char':4,'paanch':5,'chhah':6,'saat':7,
+    'aath':8,'nau':9,'das':10,'gyarah':11,'barah':12,'terah':13,
+    'chaudah':14,'pandrah':15,'solah':16,'satrah':17,'athaarah':18,
+    'unees':19,'bees':20,'pachees':25,'tees':30,'paintees':35,
+    'chaalees':40,'pachaas':50,'saath':60,'sattar':70,'assi':80,
+    'nabbe':90,'sau':100,'do sau':200,'teen sau':300,'char sau':400,
+    'paanch sau':500,'ek hazaar':1000,'dedh':1.5,'dhai':2.5,
+    'aadha':0.5,'pav':0.25,'sava':1.25
+  };
+
+  function parseHindiNum(s) {
+    s = s.trim().toLowerCase();
+    if (hindiNums[s] !== undefined) return hindiNums[s];
+    var n = parseFloat(s);
+    return isNaN(n) ? null : n;
+  }
+
   function offlineParse(text) {
     var lower = text.toLowerCase().trim();
 
-    if (/hata|undo|remove|delete|nikaal/.test(lower)) {
+    if (/hata\s*do|undo|undo\s*karo|remove|delete|nikaal|woh\s*last/.test(lower)) {
       applyAction({ action: 'remove_last', items: [], message: 'Last item hata diya.' });
       return;
     }
-    if (/clear|naya\s*bill|new\s*bill|reset|shuru/.test(lower)) {
+    if (/clear|clear\s*karo|naya\s*bill|new\s*bill|reset|shuru\s*karo/.test(lower)) {
       applyAction({ action: 'clear_all', items: [], message: 'Naya bill shuru.' });
       return;
     }
-    if (/total|print|bill|receipt/.test(lower)) {
+    if (/total\s*karo|total|print|bill\s*banao|receipt|print\s*karo/.test(lower)) {
       applyAction({ action: 'print_bill', items: [], message: 'Bill print ho raha hai.' });
       return;
     }
 
+    var segments = lower.split(/\s+aur\s+|\s*,\s*/);
     var items = [];
 
-    var p1 = /(.+?)\s+(\d+(?:\.\d+)?)\s*(kg|kilo|gram|g|litre|liter|l|ml|packet|pkt|piece|pc|dozen|dz)\w*\s+(\d+(?:\.\d+)?)\s*(?:rupay|rupee|rs|rupia)?\w*/i;
-    var match = lower.match(p1);
-    if (match) {
-      var qty = parseFloat(match[2]);
-      var unit = normalizeUnit(match[3]);
-      var price = parseFloat(match[4]);
-      items.push({
-        name: capitalize(match[1].trim()),
-        name_hi: capitalize(match[1].trim()),
-        quantity: qty,
-        unit: unit,
-        price_per_unit: price,
-        total: qty * price
-      });
-    }
+    for (var si = 0; si < segments.length; si++) {
+      var seg = segments[si].trim();
+      if (!seg) continue;
 
-    if (items.length === 0) {
+      var p1 = /(.+?)\s+(\d+(?:\.\d+)?|ek|do|teen|char|paanch|dedh|dhai|aadha|pav|sava)\s*(kg|kilo|gram|g|litre|liter|l|ml|packet|pkt|piece|pc|dozen|dz)\w*[\s,]+(\d+(?:\.\d+)?|sau|do sau|teen sau|char sau|paanch sau)\s*(?:rupay|rupee|rs|rupia)?\w*/i;
+      var match = seg.match(p1);
+      if (match) {
+        var qty = parseHindiNum(match[2]) || 1;
+        var unit = normalizeUnit(match[3]);
+        var price = parseHindiNum(match[4]) || 0;
+        items.push({
+          name: capitalize(match[1].trim()),
+          name_hi: capitalize(match[1].trim()),
+          quantity: qty, unit: unit,
+          price_per_unit: price,
+          total: qty * price
+        });
+        continue;
+      }
+
       var p2 = /(.+?)\s+(\d+(?:\.\d+)?)\s*(?:rupay|rupee|rs|rupia)\w*/i;
-      match = lower.match(p2);
+      match = seg.match(p2);
       if (match) {
         items.push({
           name: capitalize(match[1].trim()),
           name_hi: capitalize(match[1].trim()),
-          quantity: 1,
-          unit: 'piece',
+          quantity: 1, unit: 'piece',
           price_per_unit: parseFloat(match[2]),
           total: parseFloat(match[2])
         });
@@ -915,8 +936,8 @@ input{font-family:inherit;font-size:1rem}
         speak(result.message || 'Naya bill shuru. Ready hain.');
         break;
       case 'print_bill':
-        handlePrint();
         if (result.message) showAiMessage(result.message);
+        handlePrint();
         break;
       case 'set_customer':
         if (result.customer_name) {
@@ -1035,14 +1056,13 @@ input{font-family:inherit;font-size:1rem}
     }
 
     buildReceipt();
-    speak('Bill print ho raha hai.');
-
     setTimeout(function() {
       window.print();
       billState.billNumber++;
       persistSettings();
       updateDateDisplay();
       showToast('Bill #' + padNum(billState.billNumber - 1) + ' print hua. Naya bill ready.', 'success');
+      speak('Aapka bill print ho raha hai. Naya bill ke liye mic dabayein.');
     }, 300);
   }
 
@@ -1089,7 +1109,7 @@ input{font-family:inherit;font-size:1rem}
       '<div class="r-line"></div>' +
       '<div class="r-footer">' +
         'Thank you! Aapka shukriya<br>' +
-        escapeHtml(billState.footerMsg) + '</div>';
+        escapeHtml(billState.footerMsg) + ' 🙏</div>';
   }
 
   // ─── TEXT-TO-SPEECH ───
