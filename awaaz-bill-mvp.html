@@ -97,12 +97,15 @@ input{font-family:inherit;font-size:1rem}
 }
 
 .bill-totals{
+  position:sticky;bottom:0;
   margin-top:1rem;padding:1rem;
-  background:rgba(255,255,255,.04);border-radius:12px;
+  background:var(--bg);border-radius:12px;
+  box-shadow:0 -4px 16px rgba(0,0,0,.3);
+  z-index:10;
 }
 .total-row{
   display:flex;justify-content:space-between;
-  padding:.3rem 0;font-size:1.1rem;
+  padding:.3rem 0;font-size:1.25rem;
 }
 .total-row.grand{
   font-size:1.4rem;font-weight:800;color:var(--accent);
@@ -343,6 +346,10 @@ input{font-family:inherit;font-size:1rem}
       <span>Subtotal</span>
       <span id="subtotalDisplay">&#8377;0.00</span>
     </div>
+    <div class="total-row" id="discountRow" style="display:none;color:var(--green)">
+      <span>Discount</span>
+      <span id="discountDisplay">-&#8377;0.00</span>
+    </div>
     <div class="total-row grand">
       <span>Total</span>
       <span id="grandTotalDisplay">&#8377;0.00</span>
@@ -427,6 +434,7 @@ input{font-family:inherit;font-size:1rem}
     billDate: formatDate(new Date()),
     items: [],
     subtotal: 0,
+    discount: 0,
     grandTotal: 0
   };
 
@@ -630,7 +638,7 @@ input{font-family:inherit;font-size:1rem}
 
   function toggleMic() {
     if (!recognition) {
-      showToast('Voice not supported. Chrome on Android ya Desktop use karein.', 'error');
+      showToast('Voice not supported in this browser. Please use Chrome on Android or Desktop.', 'error');
       return;
     }
     if (isRecording) {
@@ -984,6 +992,7 @@ input{font-family:inherit;font-size:1rem}
   function clearAll() {
     billState.items = [];
     billState.customerName = '';
+    billState.discount = 0;
     updateTotals();
     updateBillDisplay();
   }
@@ -994,7 +1003,7 @@ input{font-family:inherit;font-size:1rem}
       sum += (billState.items[i].total || 0);
     }
     billState.subtotal = sum;
-    billState.grandTotal = sum;
+    billState.grandTotal = sum - billState.discount;
   }
 
   function handleUndo() {
@@ -1035,6 +1044,14 @@ input{font-family:inherit;font-size:1rem}
     $billRows.innerHTML = html;
 
     $subtotalDisplay.textContent = '₹' + billState.subtotal.toFixed(2);
+    var $discountRow = document.getElementById('discountRow');
+    var $discountDisplay = document.getElementById('discountDisplay');
+    if (billState.discount > 0) {
+      $discountRow.style.display = 'flex';
+      $discountDisplay.textContent = '-₹' + billState.discount.toFixed(2);
+    } else {
+      $discountRow.style.display = 'none';
+    }
     $grandTotalDisplay.textContent = '₹' + billState.grandTotal.toFixed(2);
 
     if (highlightLast) {
@@ -1104,6 +1121,7 @@ input{font-family:inherit;font-size:1rem}
       '<div class="r-line"></div>' +
       '<div class="r-total-section">' +
         '<div>Subtotal: ₹' + billState.subtotal.toFixed(2) + '</div>' +
+        (billState.discount > 0 ? '<div>Discount: -₹' + billState.discount.toFixed(2) + '</div>' : '') +
         '<div class="r-grand">Total: ₹' + billState.grandTotal.toFixed(2) + '</div>' +
       '</div>' +
       '<div class="r-line"></div>' +
