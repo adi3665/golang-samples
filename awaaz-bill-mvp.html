@@ -303,6 +303,7 @@ input{font-family:inherit;font-size:1rem}
     <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off">
     <span class="warn">Demo use only. Key sirf aapke browser mein store hogi — kisi server pe nahi jayegi.</span>
     <button id="saveApiKeyBtn">Shuru Karein</button>
+    <button id="skipApiKeyBtn" style="margin-top:.5rem;background:rgba(255,255,255,.08);color:var(--text2);font-size:.9rem">Bina API key ke chalayein (Offline Mode)</button>
   </div>
 </div>
 
@@ -494,6 +495,8 @@ input{font-family:inherit;font-size:1rem}
   }
 
   function loadDemoData() {
+    if (localStorage.getItem('awaaz_demo_shown')) return;
+    localStorage.setItem('awaaz_demo_shown', '1');
     billState.items = [
       { name: 'Tata Salt', name_hi: 'Tata Namak', quantity: 1, unit: 'kg', price_per_unit: 24, total: 24 },
       { name: 'Surf Excel', name_hi: 'Surf Excel', quantity: 1, unit: 'packet', price_per_unit: 175, total: 175 },
@@ -672,6 +675,12 @@ input{font-family:inherit;font-size:1rem}
   // ─── EVENT BINDING ───
   function bindEvents() {
     $saveApiKeyBtn.addEventListener('click', saveApiKey);
+    document.getElementById('skipApiKeyBtn').addEventListener('click', function() {
+      $apiModal.classList.add('hidden');
+      $offlineBadge.classList.add('show');
+      if (billState.items.length === 0) loadDemoData();
+      showToast('Offline mode chalu. Basic parsing available.', 'success');
+    });
     $micBtn.addEventListener('click', toggleMic);
     $undoBtn.addEventListener('click', handleUndo);
     $newBillBtn.addEventListener('click', handleNewBill);
