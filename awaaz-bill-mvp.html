@@ -32,7 +32,7 @@ body{
 .topbar .bill-meta span{display:block}
 .settings-btn{
   background:none;border:none;color:var(--text2);font-size:24px;
-  cursor:pointer;padding:8px;min-width:44px;min-height:44px;
+  cursor:pointer;padding:8px;min-width:48px;min-height:48px;
   display:flex;align-items:center;justify-content:center;
 }
 .settings-btn:hover{color:var(--accent)}
@@ -208,7 +208,7 @@ body{
 }
 .settings-panel .close-btn{
   background:none;border:none;color:var(--text2);font-size:28px;cursor:pointer;
-  min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;
+  min-width:48px;min-height:48px;display:flex;align-items:center;justify-content:center;
 }
 .field{margin-bottom:16px}
 .field label{display:block;font-size:13px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
@@ -370,7 +370,7 @@ body{
   <div class="field"><label>Address</label><input id="sAddress" value="MG Road, Bengaluru"></div>
   <div class="field"><label>Phone</label><input id="sPhone" value="98765 43210"></div>
   <div class="field"><label>GSTIN (optional)</label><input id="sGST" placeholder="e.g. 29XXXXX1234X1Z5"></div>
-  <div class="field"><label>Receipt Footer</label><input id="sFooter" value="Dobara padharen!"></div>
+  <div class="field"><label>Receipt Footer</label><input id="sFooter" value="Dobara padharen! 🙏"></div>
   <button class="save-settings-btn" id="saveSettings">Save Settings</button>
   <button class="change-key-btn" id="changeApiKey">Change API Key</button>
   <div class="about-text">
@@ -394,7 +394,7 @@ var state = {
   shopAddress: 'MG Road, Bengaluru',
   shopPhone: '98765 43210',
   shopGST: '',
-  footerMsg: 'Dobara padharen!',
+  footerMsg: 'Dobara padharen! 🙏',
   customerName: '',
   billNumber: 1,
   billDate: '',
@@ -1098,7 +1098,7 @@ function setupEventListeners() {
     state.shopAddress = $('sAddress').value.trim();
     state.shopPhone = $('sPhone').value.trim();
     state.shopGST = $('sGST').value.trim();
-    state.footerMsg = $('sFooter').value.trim() || 'Dobara padharen!';
+    state.footerMsg = $('sFooter').value.trim() || 'Dobara padharen! 🙏';
     saveSettings();
     updateShopDisplay();
     closeSettings();
