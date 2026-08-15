@@ -87,8 +87,8 @@ body {
 }
 
 .icon-btn {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: none;
   background: var(--bg-card);
@@ -373,7 +373,7 @@ body {
 
 .text-input-row input {
   flex: 1;
-  height: 44px;
+  height: 48px;
   padding: 0 14px;
   border-radius: 22px;
   border: 1px solid var(--border);
@@ -393,7 +393,7 @@ body {
 }
 
 .text-input-row button {
-  height: 44px;
+  height: 48px;
   padding: 0 18px;
   border-radius: 22px;
   border: none;
@@ -1305,6 +1305,46 @@ Rules for parsing:
     return JSON.parse(jsonStr);
   }
 
+  /* ─────────── HINDI NUMBER WORDS ─────────── */
+  const HINDI_NUMBERS = {
+    'ek': 1, 'do': 2, 'teen': 3, 'tin': 3, 'chaar': 4, 'char': 4,
+    'paanch': 5, 'panch': 5, 'che': 6, 'chhe': 6, 'chhah': 6,
+    'saat': 7, 'sat': 7, 'aath': 8, 'aat': 8, 'nau': 9, 'nao': 9,
+    'das': 10, 'gyarah': 11, 'barah': 12, 'terah': 13,
+    'chaudah': 14, 'pandrah': 15, 'solah': 16, 'satrah': 17,
+    'athrah': 18, 'atharah': 18, 'unnis': 19, 'bees': 20,
+    'ikkees': 21, 'baaees': 22, 'teis': 23, 'chaubees': 24,
+    'pachees': 25, 'chhabbees': 26, 'sattaees': 27, 'atthaees': 28,
+    'untees': 29, 'tees': 30, 'chalees': 40, 'pachaas': 50,
+    'saath': 60, 'sattar': 70, 'assi': 80, 'nabbe': 90,
+    'sau': 100, 'hazaar': 1000, 'hazar': 1000,
+    'dedh': 1.5, 'dhai': 2.5, 'aadha': 0.5, 'pav': 0.25
+  };
+
+  // Compound Hindi number patterns: "do sau" = 200, "paanch sau pachaas" = 550, "do hazaar" = 2000
+  const HINDI_COMPOUND_RE = /\b(ek|do|teen|tin|chaar|char|paanch|panch|che|chhe|chhah|saat|sat|aath|aat|nau|nao|das)\s+(sau|hazaar|hazar)(?:\s+(ek|do|teen|tin|chaar|char|paanch|panch|che|chhe|chhah|saat|sat|aath|aat|nau|nao|das|gyarah|barah|terah|chaudah|pandrah|solah|satrah|athrah|atharah|unnis|bees|pachees|tees|chalees|pachaas|saath|sattar|assi|nabbe))?\b/gi;
+
+  // Single Hindi number word pattern
+  const HINDI_SINGLE_RE = /\b(ek|do|teen|tin|chaar|char|paanch|panch|che|chhe|chhah|saat|sat|aath|aat|nau|nao|das|gyarah|barah|terah|chaudah|pandrah|solah|satrah|athrah|atharah|unnis|bees|ikkees|baaees|teis|chaubees|pachees|chhabbees|sattaees|atthaees|untees|tees|chalees|pachaas|saath|sattar|assi|nabbe|sau|hazaar|hazar|dedh|dhai|aadha|pav)\b/gi;
+
+  /** Replace Hindi number words in text with their digit equivalents */
+  function hindiNumbersToDigits(text) {
+    let result = text;
+    // First replace compound forms: "do sau pachaas" → "250"
+    result = result.replace(HINDI_COMPOUND_RE, (match, multiplier, base, remainder) => {
+      const m = HINDI_NUMBERS[multiplier.toLowerCase()] || 1;
+      const b = HINDI_NUMBERS[base.toLowerCase()] || 1;
+      const r = remainder ? (HINDI_NUMBERS[remainder.toLowerCase()] || 0) : 0;
+      return String(m * b + r);
+    });
+    // Then replace remaining single Hindi number words
+    result = result.replace(HINDI_SINGLE_RE, (match) => {
+      const n = HINDI_NUMBERS[match.toLowerCase()];
+      return n !== undefined ? String(n) : match;
+    });
+    return result;
+  }
+
   /* ─────────── OFFLINE PARSER ─────────── */
   function offlineParse(text) {
     const lower = text.toLowerCase().trim();
@@ -1320,22 +1360,18 @@ Rules for parsing:
       return { action: 'print_bill', items: [], message: 'Bill print ho raha hai.' };
     }
 
+    // Convert Hindi number words to digits before regex parsing
+    // e.g. "sugar ek kilo do sau rupaye" → "sugar 1 kilo 200 rupaye"
+    const normalized = hindiNumbersToDigits(text);
+
     // Try to parse items: look for patterns like "item qty unit price rupaye"
     const items = [];
 
-    // Pattern: <name> <qty> <unit> <price> (rupaye/rupee/rs)
-    // Also: <name> <price> rupaye
-    const patterns = [
-      // "Sugar 1 kilo 50 rupaye" or "Sugar ek kilo 50 rupaye"
-      /([a-zA-Zऀ-ॿ\s]+?)\s+(\d+(?:\.\d+)?)\s*(kilo|kg|gram|g|litre|liter|l|ml|packet|pkt|piece|pc|dozen|dzn|dana|pieces|packets)\s+(\d+(?:\.\d+)?)\s*(?:rupay|rupee|rs|₹)?/gi,
-      // "Sugar 50 rupaye" (no qty/unit)
-      /([a-zA-Zऀ-ॿ\s]+?)\s+(\d+(?:\.\d+)?)\s*(?:rupay|rupee|rs|₹)/gi
-    ];
-
     // Try detailed pattern first
+    // "Sugar 1 kilo 50 rupaye" or after Hindi conversion "Sugar 1 kilo 200 rupaye"
     let match;
     const regex1 = /([a-zA-Zऀ-ॿ][\wऀ-ॿ\s-]*?)\s+(\d+(?:\.\d+)?)\s*(kilo|kg|gram|g|litre|liter|l|ml|packet|pkt|piece|pc|dozen|dzn|dana|pieces|packets)\s+(\d+(?:\.\d+)?)\s*(?:rupay|rupee|rs|₹|ka|ke|ki)?/gi;
-    while ((match = regex1.exec(text)) !== null) {
+    while ((match = regex1.exec(normalized)) !== null) {
       const name = match[1].trim();
       const qty = parseFloat(match[2]);
       const unit = normalizeUnit(match[3]);
@@ -1355,7 +1391,7 @@ Rules for parsing:
     // If no detailed matches, try simple "name price" pattern
     if (items.length === 0) {
       const regex2 = /([a-zA-Zऀ-ॿ][\wऀ-ॿ\s-]*?)\s+(\d+(?:\.\d+)?)\s*(?:rupay|rupee|rs|₹|ka|ke|ki)/gi;
-      while ((match = regex2.exec(text)) !== null) {
+      while ((match = regex2.exec(normalized)) !== null) {
         const name = match[1].trim();
         const price = parseFloat(match[2]);
         if (name && price && name.length < 40) {
