@@ -80,6 +80,13 @@ body {
   color: var(--text-secondary);
 }
 
+.top-bar .meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .top-bar-actions {
   display: flex;
   align-items: center;
@@ -184,7 +191,7 @@ body {
 }
 
 .bill-item-row.just-added {
-  animation: highlight-item 1.5s ease-out forwards;
+  animation: highlight-item 1.5s ease-out;
 }
 
 /* --- Totals Bar --- */
@@ -285,6 +292,39 @@ body {
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Persistent Voice Notice (unsupported browser / mic blocked) --- */
+.voice-notice {
+  display: none;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.35);
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.voice-notice.visible {
+  display: block;
+}
+
+.voice-notice strong {
+  display: block;
+  color: var(--danger);
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.voice-notice ol {
+  margin: 8px 0 0 18px;
+  color: var(--text-secondary);
+}
+
+.voice-notice li {
+  margin-bottom: 2px;
 }
 
 /* --- Listening Indicator --- */
@@ -600,32 +640,29 @@ body {
   cursor: pointer;
 }
 
-/* --- Offline Badge --- */
+/* --- Offline Badge (inline in the top bar, never over the bill) --- */
 .offline-badge {
   display: none;
-  position: fixed;
-  top: 60px;
-  right: 16px;
   background: var(--danger);
   color: white;
   font-size: 11px;
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 12px;
-  z-index: 15;
+  padding: 3px 8px;
+  border-radius: 10px;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .offline-badge.visible {
-  display: block;
+  display: inline-block;
 }
 
-/* --- Toast --- */
+/* --- Toast (above the bottom bar — the bill stays readable) --- */
 .toast {
   position: fixed;
-  top: 70px;
+  bottom: 185px;
   left: 50%;
-  transform: translateX(-50%) translateY(-20px);
+  transform: translateX(-50%) translateY(20px);
   background: var(--bg-card);
   color: var(--text-primary);
   padding: 12px 20px;
@@ -683,23 +720,33 @@ body {
 }
 
 @media print {
-  body * {
-    visibility: hidden;
+  /* The app screen is a locked-height flex column; a receipt printed inside it
+     would clip at one page. Release the page box before printing. */
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    background: white !important;
   }
 
-  .receipt-container,
-  .receipt-container * {
-    visibility: visible !important;
+  body > *:not(.receipt-container) {
+    display: none !important;
   }
 
   .receipt-container {
     display: block !important;
-    position: fixed;
-    top: 0;
-    left: 0;
+    position: static;
     width: 100%;
     background: white;
-    z-index: 9999;
+  }
+
+  .receipt tr {
+    page-break-inside: avoid;
+  }
+
+  @page {
+    size: 80mm auto;
+    margin: 4mm 0;
   }
 
   .receipt {
@@ -793,6 +840,20 @@ body {
   }
 }
 
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* Keep the recording state obvious without the pulse */
+  .mic-btn.recording {
+    outline: 3px solid var(--danger);
+    outline-offset: 3px;
+  }
+}
+
 /* --- Responsive --- */
 @media (max-width: 400px) {
   .bill-header-row, .bill-item-row {
@@ -812,14 +873,12 @@ body {
   }
 }
 
-/* --- Keyboard shortcut hint --- */
+/* --- Keyboard shortcut hint (in the dock flow, so it overlaps nothing) --- */
 .key-hint {
-  position: fixed;
-  bottom: 180px;
-  left: 50%;
-  transform: translateX(-50%);
   font-size: 11px;
   color: var(--text-muted);
+  text-align: center;
+  letter-spacing: 0.5px;
   display: none;
 }
 
@@ -834,7 +893,10 @@ body {
 <header class="top-bar no-print">
   <div class="shop-info">
     <div class="shop-name" id="topShopName">Awaaz Bill</div>
-    <div class="bill-meta" id="topBillMeta">Bill #001 &bull; Loading...</div>
+    <div class="meta-row">
+      <div class="bill-meta" id="topBillMeta">Bill #001 &bull; Loading...</div>
+      <span class="offline-badge" id="offlineBadge">OFFLINE</span>
+    </div>
   </div>
   <div class="top-bar-actions">
     <button class="icon-btn" id="btnAbout" title="About" aria-label="About">ℹ</button>
@@ -850,9 +912,6 @@ body {
   <br>
   <em>Built with ❤️ for Kirana Store owners.</em>
 </div>
-
-<!-- ═══ OFFLINE BADGE ═══ -->
-<div class="offline-badge" id="offlineBadge">📴 OFFLINE MODE</div>
 
 <!-- ═══ TOAST ═══ -->
 <div class="toast" id="toast"></div>
@@ -883,6 +942,10 @@ body {
       <span>Subtotal</span>
       <span id="subtotalDisplay">₹0.00</span>
     </div>
+    <div class="total-row" id="discountRow" style="display:none;">
+      <span>Discount</span>
+      <span id="discountDisplay">₹0.00</span>
+    </div>
     <div class="total-row grand-total">
       <span>Total</span>
       <span id="grandTotalDisplay">₹0.00</span>
@@ -910,6 +973,8 @@ body {
     </div>
 
     <div class="ai-response-bubble" id="aiBubble"></div>
+
+    <div class="voice-notice" id="voiceNotice"></div>
   </div>
 </main>
 
@@ -925,9 +990,8 @@ body {
     <button class="action-btn" id="btnNewBill">🆕 New</button>
     <button class="action-btn print-btn" id="btnPrint">🖨 Print</button>
   </div>
+  <div class="key-hint">SPACE dabakar mic on/off karein</div>
 </div>
-
-<div class="key-hint">SPACE to start/stop mic</div>
 
 <!-- ═══ API KEY MODAL ═══ -->
 <div class="modal-overlay" id="apiKeyModal">
@@ -1003,7 +1067,7 @@ Respond ONLY with a valid JSON object. No other text, no markdown, no explanatio
 
 JSON format:
 {
-  "action": "add_items" | "remove_last" | "clear_all" | "print_bill" | "set_customer" | "none",
+  "action": "add_items" | "update_last" | "remove_last" | "clear_all" | "print_bill" | "set_customer" | "none",
   "items": [
     {
       "name": "Sugar",
@@ -1022,13 +1086,15 @@ Rules for parsing:
 - Extract item name, quantity, unit (kg/g/litre/ml/packet/piece/dozen), and price
 - If only price is mentioned without unit, assume 1 piece
 - "hata do", "undo", "remove", "nikal do" → action: "remove_last"
+- A correction or change to the item just added — "do kilo karo", "nahi nahi 250 ka tha", "teen packet kar do" → action: "update_last", with a single entry in items[] holding ONLY the fields that changed (quantity, unit, and/or price_per_unit). Do not use remove_last + add_items for a correction.
+- Price convention: when the quantity is in grams or ml, the spoken rupee amount is almost always the price for that whole quantity, NOT a per-gram rate. "Namak 200 gram teen rupaye" → quantity 200, unit "g", price_per_unit 3, total 3. For kg/litre/packet/piece the spoken amount is the rate per unit, so total = quantity * price_per_unit.
 - "clear", "naya bill", "new bill", "sab hata do" → action: "clear_all"
 - "total", "print", "bill banao", "receipt", "print karo", "bill de do" → action: "print_bill"
 - "customer", "naam", "name" → action: "set_customer", put name in customer_name
 - Map Hindi item names to English for name, keep Hindi in name_hi
 - If nothing parseable or it's just noise, action: "none", message: "Samajh nahi aaya, dobara boliye."
 - Multiple items in one utterance should all appear in the items array
-- Calculate total = quantity * price_per_unit for each item
+- Always fill "total" — the actual rupee amount for that line, following the price convention above
 - Common units: kilo/kg, gram/g, litre/L, packet/pkt, piece/pc, dozen/dzn`;
 
   const DEMO_ITEMS = [
@@ -1049,6 +1115,7 @@ Rules for parsing:
     },
     billNumber: parseInt(lsGet('bill_number', '1')),
     items: [],
+    discount: 0,
     customerName: '',
     isListening: false,
     isProcessing: false,
@@ -1078,6 +1145,8 @@ Rules for parsing:
     emptyState: $('emptyState'),
     totalsBar: $('totalsBar'),
     subtotal: $('subtotalDisplay'),
+    discountRow: $('discountRow'),
+    discountDisplay: $('discountDisplay'),
     grandTotal: $('grandTotalDisplay'),
     itemCount: $('itemCount'),
     listeningInd: $('listeningIndicator'),
@@ -1085,6 +1154,7 @@ Rules for parsing:
     speechBubble: $('speechBubble'),
     speechText: $('speechText'),
     aiBubble: $('aiBubble'),
+    voiceNotice: $('voiceNotice'),
     textInput: $('textInput'),
     btnTextSend: $('btnTextSend'),
     btnMic: $('btnMic'),
@@ -1121,7 +1191,7 @@ Rules for parsing:
     // First launch: show demo items
     if (state.isFirstLaunch) {
       lsSet('launched', '1');
-      state.items = JSON.parse(JSON.stringify(DEMO_ITEMS));
+      state.items = DEMO_ITEMS.map(normalizeItem);
     }
 
     // Check API key
@@ -1149,6 +1219,11 @@ Rules for parsing:
       state.voiceSupported = false;
       dom.btnMic.classList.add('disabled');
       dom.btnMic.title = 'Voice not supported';
+      showNotice(
+        '<strong>Voice not supported in this browser</strong>' +
+        'Please use Chrome on Android or Desktop.<br>' +
+        'Tab tak neeche box mein type karke item add kar sakte hain.'
+      );
       return;
     }
 
@@ -1161,6 +1236,7 @@ Rules for parsing:
 
     recog.onstart = () => {
       state.isListening = true;
+      hideNotice(); // mic is working — clear any stale permission instructions
       dom.btnMic.classList.add('recording');
       dom.listeningInd.classList.add('active');
       dom.speechBubble.classList.remove('visible');
@@ -1191,9 +1267,21 @@ Rules for parsing:
 
     recog.onerror = (e) => {
       stopListening();
-      if (e.error === 'not-allowed') {
-        showToast('🎙️ Mic permission denied. Browser settings mein mic allow karein.');
-      } else if (e.error !== 'aborted' && e.error !== 'no-speech') {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        showNotice(
+          '<strong>🎙️ Mic ki permission nahi hai</strong>' +
+          'Mic chalu karne ke liye:' +
+          '<ol>' +
+            '<li>Address bar mein 🔒 ya ⓘ par tap karein</li>' +
+            '<li>Permissions → Microphone → <em>Allow</em> chunein</li>' +
+            '<li>Page refresh karein</li>' +
+          '</ol>' +
+          'Tab tak neeche box mein type karke item add karein.'
+        );
+        dom.textInput.focus();
+      } else if (e.error === 'no-speech') {
+        showToast('🎙️ Kuch sunai nahi diya. Dobara boliye.');
+      } else if (e.error !== 'aborted') {
         showToast('🎙️ Sunai nahi diya. Dobara try karein.');
       }
     };
@@ -1346,6 +1434,8 @@ Rules for parsing:
   }
 
   /* ─────────── OFFLINE PARSER ─────────── */
+  const UNIT_RE = 'kilo|kilos|kg|gram|grams|gm|g|litre|liter|ltr|l|ml|packet|packets|pkt|piece|pieces|pc|dozen|dzn|dana';
+
   function offlineParse(text) {
     const lower = text.toLowerCase().trim();
 
@@ -1364,48 +1454,17 @@ Rules for parsing:
     // e.g. "sugar ek kilo do sau rupaye" → "sugar 1 kilo 200 rupaye"
     const normalized = hindiNumbersToDigits(text);
 
-    // Try to parse items: look for patterns like "item qty unit price rupaye"
+    // Correction of the item just added — "do kilo karo", "nahi nahi 250 ka tha"
+    const correction = parseCorrection(normalized);
+    if (correction) return correction;
+
+    // "Sugar 1 kilo 200 aur namak 3 rupaye" → parse each half separately
+    const chunks = normalized.split(/\s+(?:aur|and|plus|phir)\s+|[,;]/i);
     const items = [];
-
-    // Try detailed pattern first
-    // "Sugar 1 kilo 50 rupaye" or after Hindi conversion "Sugar 1 kilo 200 rupaye"
-    let match;
-    const regex1 = /([a-zA-Zऀ-ॿ][\wऀ-ॿ\s-]*?)\s+(\d+(?:\.\d+)?)\s*(kilo|kg|gram|g|litre|liter|l|ml|packet|pkt|piece|pc|dozen|dzn|dana|pieces|packets)\s+(\d+(?:\.\d+)?)\s*(?:rupay|rupee|rs|₹|ka|ke|ki)?/gi;
-    while ((match = regex1.exec(normalized)) !== null) {
-      const name = match[1].trim();
-      const qty = parseFloat(match[2]);
-      const unit = normalizeUnit(match[3]);
-      const price = parseFloat(match[4]);
-      if (name && qty && price) {
-        items.push({
-          name: name,
-          name_hi: name,
-          quantity: qty,
-          unit: unit,
-          price_per_unit: price,
-          total: qty * price
-        });
-      }
-    }
-
-    // If no detailed matches, try simple "name price" pattern
-    if (items.length === 0) {
-      const regex2 = /([a-zA-Zऀ-ॿ][\wऀ-ॿ\s-]*?)\s+(\d+(?:\.\d+)?)\s*(?:rupay|rupee|rs|₹|ka|ke|ki)/gi;
-      while ((match = regex2.exec(normalized)) !== null) {
-        const name = match[1].trim();
-        const price = parseFloat(match[2]);
-        if (name && price && name.length < 40) {
-          items.push({
-            name: name,
-            name_hi: name,
-            quantity: 1,
-            unit: 'piece',
-            price_per_unit: price,
-            total: price
-          });
-        }
-      }
-    }
+    chunks.forEach(chunk => {
+      const item = parseItemChunk(chunk);
+      if (item) items.push(item);
+    });
 
     if (items.length > 0) {
       return {
@@ -1418,15 +1477,81 @@ Rules for parsing:
     return { action: 'none', items: [], message: 'Samajh nahi aaya. Dobara boliye.' };
   }
 
+  /** Parse one utterance fragment into a single bill item, or null. */
+  function parseItemChunk(chunk) {
+    const text = chunk.trim();
+    if (!text) return null;
+
+    // "Sugar 1 kilo 200 rupaye" — name, quantity, unit, price
+    const full = new RegExp('([a-zA-Zऀ-ॿ][\\wऀ-ॿ\\s-]*?)\\s+(\\d+(?:\\.\\d+)?)\\s*(' + UNIT_RE + ')\\s+(\\d+(?:\\.\\d+)?)\\s*(?:rupay\\w*|rupee\\w*|rs|₹|ka|ke|ki)?', 'i');
+    let m = text.match(full);
+    if (m && m[1].trim() && parseFloat(m[2]) && parseFloat(m[4])) {
+      return buildItem(m[1], parseFloat(m[2]), normalizeUnit(m[3]), parseFloat(m[4]));
+    }
+
+    // "Ariel powder 180 rupaye" — name and price only, assume 1 piece
+    const simple = new RegExp('([a-zA-Zऀ-ॿ][\\wऀ-ॿ\\s-]*?)\\s+(\\d+(?:\\.\\d+)?)\\s*(?:rupay\\w*|rupee\\w*|rs|₹|ka|ke|ki)', 'i');
+    m = text.match(simple);
+    if (m && m[1].trim() && parseFloat(m[2]) && m[1].trim().length < 40) {
+      return buildItem(m[1], 1, 'piece', parseFloat(m[2]));
+    }
+
+    return null;
+  }
+
+  /**
+   * Build an item, applying the kirana pricing convention: a rupee amount spoken
+   * alongside a gram/ml quantity is the price for the whole quantity ("namak 200
+   * gram teen rupaye" is ₹3, not ₹600), while kg/litre/packet/piece amounts are
+   * the rate per unit.
+   */
+  function buildItem(name, qty, unit, price) {
+    const isSubUnit = unit === 'g' || unit === 'ml';
+    return {
+      name: titleCase(name.trim()),
+      name_hi: name.trim(),
+      quantity: qty,
+      unit: unit,
+      price_per_unit: price,
+      total: isSubUnit ? price : qty * price
+    };
+  }
+
+  /** "Do kilo karo" / "250 ka tha" — change the item that was just added. */
+  function parseCorrection(normalized) {
+    const text = normalized.trim();
+    if (!/\b(karo|kar\s*do|kardo|ka\s*tha|ki\s*thi|ke\s*the|nahi\s*nahi|galat)\b/i.test(text)) return null;
+
+    const qtyMatch = text.match(new RegExp('(\\d+(?:\\.\\d+)?)\\s*(' + UNIT_RE + ')\\b', 'i'));
+    const priceMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:rupay\w*|rupee\w*|rs|₹)?\s*(?:ka|ke|ki)\s*(?:tha|thi|the)/i)
+                    || text.match(/(\d+(?:\.\d+)?)\s*(?:rupay\w*|rupee\w*|rs|₹)/i);
+
+    const patch = {};
+    if (qtyMatch) {
+      patch.quantity = parseFloat(qtyMatch[1]);
+      patch.unit = normalizeUnit(qtyMatch[2]);
+    }
+    if (priceMatch && (!qtyMatch || priceMatch.index !== qtyMatch.index)) {
+      patch.price_per_unit = parseFloat(priceMatch[1]);
+    }
+    if (!Object.keys(patch).length) return null;
+
+    return { action: 'update_last', items: [patch], message: 'Last item update kiya.' };
+  }
+
+  function titleCase(s) {
+    return s.replace(/\S+/g, w => w.charAt(0).toUpperCase() + w.slice(1));
+  }
+
   function normalizeUnit(u) {
     const lower = u.toLowerCase();
     const map = {
-      'kilo': 'kg', 'kg': 'kg',
-      'gram': 'g', 'g': 'g',
-      'litre': 'L', 'liter': 'L', 'l': 'L',
+      'kilo': 'kg', 'kilos': 'kg', 'kg': 'kg',
+      'gram': 'g', 'grams': 'g', 'gm': 'g', 'g': 'g',
+      'litre': 'L', 'liter': 'L', 'ltr': 'L', 'l': 'L',
       'ml': 'ml',
-      'packet': 'packet', 'pkt': 'packet', 'packets': 'packets',
-      'piece': 'piece', 'pc': 'piece', 'pieces': 'pieces',
+      'packet': 'packet', 'pkt': 'packet', 'packets': 'packet',
+      'piece': 'piece', 'pc': 'piece', 'pieces': 'piece',
       'dozen': 'dozen', 'dzn': 'dozen',
       'dana': 'piece'
     };
@@ -1437,13 +1562,16 @@ Rules for parsing:
   function applyParsedAction(parsed) {
     const { action, items, customer_name, message } = parsed;
 
+    // A discount may ride along with any action ("das rupaye chhoot de do")
+    if (parsed.discount != null && isFinite(num(parsed.discount, NaN))) {
+      state.discount = Math.max(0, num(parsed.discount, 0));
+    }
+
     switch(action) {
       case 'add_items':
         if (items && items.length) {
           items.forEach(item => {
-            // Ensure total is calculated
-            if (!item.total) item.total = (item.quantity || 1) * (item.price_per_unit || 0);
-            state.items.push(item);
+            state.items.push(normalizeItem(item));
           });
           renderBill();
           highlightLastItems(items.length);
@@ -1454,6 +1582,34 @@ Rules for parsing:
           showAIBubble('Koi item parse nahi hua. Dobara try karein.', true);
         }
         break;
+
+      case 'update_last': {
+        const patch = items && items[0];
+        if (!state.items.length) {
+          speak('Bill khali hai. Pehle item boliye.');
+          showAIBubble('Bill mein koi item nahi hai.', true);
+          break;
+        }
+        if (!patch) {
+          speak('Samajh nahi aaya. Dobara boliye.');
+          showAIBubble('Kya badalna hai samajh nahi aaya.', true);
+          break;
+        }
+        const last = state.items[state.items.length - 1];
+        if (patch.quantity != null) last.quantity = patch.quantity;
+        if (patch.unit) last.unit = normalizeUnit(String(patch.unit));
+        if (patch.price_per_unit != null) last.price_per_unit = patch.price_per_unit;
+        // The patch changes the line, so the old total never carries over.
+        delete last.total;
+        state.items[state.items.length - 1] = normalizeItem(last);
+        renderBill();
+        highlightLastItems(1);
+        const updated = state.items[state.items.length - 1];
+        const note = message || `${updated.name} ab ${updated.quantity} ${updated.unit}, ₹${formatNum(updated.total)}.`;
+        speak(note);
+        showAIBubble(note, false);
+        break;
+      }
 
       case 'remove_last':
         if (state.items.length > 0) {
@@ -1470,6 +1626,7 @@ Rules for parsing:
       case 'clear_all':
         state.items = [];
         state.customerName = '';
+        state.discount = 0;
         renderBill();
         speak(message || 'Naya bill shuru. Ready hain.');
         showAIBubble(message || 'Naya bill shuru! 🆕', false);
@@ -1497,6 +1654,38 @@ Rules for parsing:
     }
   }
 
+  /**
+   * Coerce an item from any source (Claude or the offline parser) into the shape
+   * the bill renders. A total supplied by the parser wins; otherwise it follows
+   * the gram/ml pricing convention so "200 gram, 3 rupaye" bills ₹3, not ₹600.
+   */
+  function normalizeItem(item) {
+    const qty = num(item.quantity, 1);
+    const unit = item.unit ? normalizeUnit(String(item.unit)) : 'piece';
+    let rate = num(item.price_per_unit, 0);
+    let total = num(item.total, NaN);
+
+    if (!isFinite(total)) {
+      total = (unit === 'g' || unit === 'ml') ? rate : qty * rate;
+    } else if (!rate && qty) {
+      rate = (unit === 'g' || unit === 'ml') ? total : total / qty;
+    }
+
+    return {
+      name: String(item.name || 'Item').trim(),
+      name_hi: String(item.name_hi || item.name || '').trim(),
+      quantity: qty,
+      unit: unit,
+      price_per_unit: rate,
+      total: total
+    };
+  }
+
+  function num(v, fallback) {
+    const n = typeof v === 'string' ? parseFloat(v.replace(/[^\d.-]/g, '')) : v;
+    return typeof n === 'number' && isFinite(n) ? n : fallback;
+  }
+
   function formatAddedMessage(items) {
     if (items.length === 1) {
       const i = items[0];
@@ -1515,7 +1704,6 @@ Rules for parsing:
 
     // Build item rows
     dom.billItemsList.innerHTML = '';
-    let subtotal = 0;
 
     state.items.forEach((item, idx) => {
       const row = document.createElement('div');
@@ -1523,7 +1711,6 @@ Rules for parsing:
       row.dataset.index = idx;
 
       const total = item.total || (item.quantity * item.price_per_unit);
-      subtotal += total;
 
       row.innerHTML = `
         <div class="item-name">
@@ -1539,8 +1726,11 @@ Rules for parsing:
     });
 
     // Update totals
-    dom.subtotal.textContent = '₹' + formatNum(subtotal);
-    dom.grandTotal.textContent = '₹' + formatNum(subtotal);
+    const t = computeTotals();
+    dom.subtotal.textContent = '₹' + formatNum(t.subtotal);
+    dom.discountRow.style.display = t.discount > 0 ? 'flex' : 'none';
+    dom.discountDisplay.textContent = '− ₹' + formatNum(t.discount);
+    dom.grandTotal.textContent = '₹' + formatNum(t.grandTotal);
 
     // Item count
     dom.itemCount.textContent = hasItems ? `${state.items.length} item${state.items.length > 1 ? 's' : ''}` : '';
@@ -1549,6 +1739,16 @@ Rules for parsing:
     dom.mainContent.scrollTop = dom.mainContent.scrollHeight;
 
     updateTopBar();
+  }
+
+  /** Single source of truth for bill arithmetic — used by screen and receipt. */
+  function computeTotals() {
+    let subtotal = 0;
+    state.items.forEach(i => {
+      subtotal += num(i.total, num(i.quantity, 0) * num(i.price_per_unit, 0));
+    });
+    const discount = Math.min(num(state.discount, 0), subtotal);
+    return { subtotal: subtotal, discount: discount, grandTotal: subtotal - discount };
   }
 
   function highlightLastItems(count) {
@@ -1624,15 +1824,14 @@ Rules for parsing:
     const dateStr = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
     const billNum = String(state.billNumber).padStart(3, '0');
 
-    let subtotal = 0;
-    state.items.forEach(i => { subtotal += (i.total || i.quantity * i.price_per_unit); });
+    const totals = computeTotals();
 
     let itemRows = '';
     state.items.forEach(item => {
       const total = item.total || item.quantity * item.price_per_unit;
       itemRows += `<tr>
         <td>${esc(item.name)}</td>
-        <td>${item.quantity}${esc(item.unit)}</td>
+        <td>${item.quantity}${['kg','g','L','ml'].indexOf(item.unit) >= 0 ? '' : ' '}${esc(item.unit)}</td>
         <td>${formatNum(item.price_per_unit)}</td>
         <td>${formatNum(total)}</td>
       </tr>`;
@@ -1658,8 +1857,9 @@ Rules for parsing:
       </table>
       <hr class="r-divider">
       <div class="r-totals">
-        <div>Subtotal: ₹${formatNum(subtotal)}</div>
-        <div class="r-grand">Total: ₹${formatNum(subtotal)}</div>
+        <div>Subtotal: ₹${formatNum(totals.subtotal)}</div>
+        ${totals.discount > 0 ? `<div>Discount: -₹${formatNum(totals.discount)}</div>` : ''}
+        <div class="r-grand">Total: ₹${formatNum(totals.grandTotal)}</div>
       </div>
       <hr class="r-divider">
       <div class="r-footer">
@@ -1707,9 +1907,21 @@ Rules for parsing:
     setTimeout(() => dom.toast.classList.remove('visible'), 3000);
   }
 
+  /** Persistent, non-dismissing guidance (mic blocked / browser unsupported). */
+  function showNotice(html) {
+    dom.voiceNotice.innerHTML = html;
+    dom.voiceNotice.classList.add('visible');
+  }
+
+  function hideNotice() {
+    if (!state.voiceSupported) return; // unsupported-browser notice always stays
+    dom.voiceNotice.classList.remove('visible');
+  }
+
   function showAIBubble(msg, isError) {
     dom.aiBubble.textContent = msg;
     dom.aiBubble.className = 'ai-response-bubble visible' + (isError ? ' error' : '');
+    dom.mainContent.scrollTop = dom.mainContent.scrollHeight; // keep it above the dock
     // Auto-hide after a while
     setTimeout(() => dom.aiBubble.classList.remove('visible'), 5000);
   }
@@ -1761,13 +1973,14 @@ Rules for parsing:
       }
     });
 
-    // Keyboard shortcut: SPACE to toggle mic (when not typing)
+    // Keyboard shortcut: SPACE to toggle mic (not while typing or in a dialog)
     document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && document.activeElement !== dom.textInput
-          && document.activeElement.tagName !== 'INPUT') {
-        e.preventDefault();
-        toggleListening();
-      }
+      if (e.code !== 'Space' || e.repeat) return;
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+      if (document.querySelector('.modal-overlay.visible')) return;
+      e.preventDefault();
+      toggleListening();
     });
 
     // Settings
