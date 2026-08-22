@@ -1450,6 +1450,13 @@ Rules for parsing:
       return { action: 'print_bill', items: [], message: 'Bill print ho raha hai.' };
     }
 
+    // Customer name — "customer Ramesh", "naam Sharma ji", "customer name Raju"
+    const custMatch = lower.match(/\b(?:customer|naam|name)\s+(?:name\s+)?(.+)/i);
+    if (custMatch && custMatch[1].trim()) {
+      const cname = custMatch[1].trim().replace(/\b\w/g, c => c.toUpperCase());
+      return { action: 'set_customer', items: [], customer_name: cname, message: 'Customer: ' + cname };
+    }
+
     // Convert Hindi number words to digits before regex parsing
     // e.g. "sugar ek kilo do sau rupaye" → "sugar 1 kilo 200 rupaye"
     const normalized = hindiNumbersToDigits(text);
@@ -1780,8 +1787,8 @@ Rules for parsing:
     utter.rate = 1.0;
     utter.pitch = 1.0;
 
-    // Try to find a Hindi voice
-    const voices = window.speechSynthesis.getVoices();
+    // Try to find a Hindi voice (prefer cached list; fall back to live query)
+    const voices = _cachedVoices.length ? _cachedVoices : window.speechSynthesis.getVoices();
     const hindiVoice = voices.find(v => v.lang.startsWith('hi')) ||
                        voices.find(v => v.lang.includes('IN'));
     if (hindiVoice) utter.voice = hindiVoice;
@@ -1789,11 +1796,14 @@ Rules for parsing:
     window.speechSynthesis.speak(utter);
   }
 
-  // Load voices
+  // Load voices — cache them so speak() finds the Hindi voice on first call
+  let _cachedVoices = [];
   if (window.speechSynthesis) {
-    window.speechSynthesis.onvoiceschanged = () => {};
-    // Trigger voice loading
-    window.speechSynthesis.getVoices();
+    function _loadVoices() {
+      _cachedVoices = window.speechSynthesis.getVoices();
+    }
+    window.speechSynthesis.onvoiceschanged = _loadVoices;
+    _loadVoices(); // trigger immediate load (may be empty; onvoiceschanged fires later)
   }
 
   /* ─────────── PRINT / RECEIPT ─────────── */
@@ -1895,6 +1905,11 @@ Rules for parsing:
     lsSet('shop_footer', state.shop.footer);
     lsSet('api_key', state.apiKey);
 
+    // If an API key was just provided, hide offline badge (user is back online-capable)
+    if (state.apiKey && state.isOnline) {
+      dom.offlineBadge.classList.remove('visible');
+    }
+
     dom.settingsModal.classList.remove('visible');
     updateTopBar();
     showToast('✅ Settings save ho gaye!');
@@ -1934,8 +1949,10 @@ Rules for parsing:
   }
 
   function formatNum(n) {
-    if (n == null || isNaN(n)) return '0.00';
-    return Number(n).toFixed(2);
+    if (n == null || isNaN(n)) return '0';
+    const val = Number(n);
+    // Show paise only when they exist (e.g. 12.50), otherwise whole rupees
+    return val % 1 === 0 ? String(val) : val.toFixed(2);
   }
 
   /* ─────────── EVENT BINDINGS ─────────── */
@@ -2034,9 +2051,15 @@ Rules for parsing:
   }
 
   /* ─────────── START ─────────── */
-  document.addEventListener('DOMContentLoaded', init);
+  let _initialized = false;
+  function safeInit() {
+    if (_initialized) return;
+    _initialized = true;
+    init();
+  }
+  document.addEventListener('DOMContentLoaded', safeInit);
   // Fallback if DOMContentLoaded already fired
-  if (document.readyState !== 'loading') init();
+  if (document.readyState !== 'loading') safeInit();
 
 })();
 </script>
