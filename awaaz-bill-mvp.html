@@ -62,7 +62,7 @@ html, body {
 }
 .modal-box input:focus { border-color: var(--accent); }
 .modal-box .warning {
-  font-size: 12px; color: var(--danger); margin-bottom: 16px;
+  font-size: 14px; color: var(--danger); margin-bottom: 16px;
   background: rgba(239,68,68,0.1); padding: 8px 12px; border-radius: 8px;
 }
 .btn-primary {
@@ -87,7 +87,7 @@ html, body {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .top-bar .bill-meta {
-  font-size: 13px; color: var(--text-secondary); margin-top: 2px;
+  font-size: 14px; color: var(--text-secondary); margin-top: 2px;
 }
 .top-bar-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
 .icon-btn {
@@ -102,7 +102,7 @@ html, body {
 .offline-badge {
   display: none;
   background: var(--danger); color: white;
-  font-size: 11px; font-weight: 700;
+  font-size: 12px; font-weight: 700;
   padding: 2px 8px; border-radius: 6px; margin-left: 8px;
 }
 .offline-badge.show { display: inline-block; }
@@ -121,7 +121,7 @@ html, body {
 .bill-header-row {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
-  font-size: 12px; font-weight: 700;
+  font-size: 13px; font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase; letter-spacing: 0.5px;
   padding: 8px 12px;
@@ -179,7 +179,7 @@ html, body {
 .transcript-bubble {
   background: var(--bg-card);
   border: 1px solid var(--border); border-radius: 12px;
-  padding: 10px 16px; font-size: 15px;
+  padding: 10px 16px; font-size: 16px;
   color: var(--text-secondary);
   min-height: 40px;
   display: flex; align-items: center; gap: 8px;
@@ -201,7 +201,7 @@ html, body {
   40% { transform: scale(1); opacity: 1; }
 }
 .ai-message {
-  margin-top: 6px; font-size: 14px;
+  margin-top: 6px; font-size: 15px;
   color: var(--success); padding: 0 4px;
   min-height: 20px;
 }
@@ -277,7 +277,7 @@ html, body {
 .settings-panel.open { right: 0; }
 .settings-panel h2 { font-size: 20px; color: var(--accent); margin-bottom: 20px; }
 .settings-panel label {
-  display: block; font-size: 14px; color: var(--text-secondary);
+  display: block; font-size: 15px; color: var(--text-secondary);
   margin-bottom: 4px; margin-top: 14px;
 }
 .settings-panel input, .settings-panel textarea {
@@ -325,7 +325,7 @@ html, body {
   position: fixed; top: 70px; right: 16px;
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: 12px; padding: 16px;
-  font-size: 13px; color: var(--text-secondary);
+  font-size: 14px; color: var(--text-secondary);
   max-width: 280px; line-height: 1.5;
   z-index: 100; display: none;
 }
@@ -764,6 +764,9 @@ html, body {
       parseWithClaude(text).then(function(result) {
         if (!result) result = parseOffline(text);
         applyAction(result);
+      }).catch(function() {
+        applyAction(parseOffline(text));
+      }).then(function() {
         isProcessing = false;
       });
     } else {
@@ -966,6 +969,8 @@ html, body {
     }
   }
 
+  var lastAddedCount = 0;
+
   function addItems(items) {
     if (!items.length) return;
     for (var i = 0; i < items.length; i++) {
@@ -974,8 +979,10 @@ html, body {
       it.price_per_unit = it.price_per_unit || (it.quantity ? it.total / it.quantity : it.total);
       billState.items.push(it);
     }
+    lastAddedCount = items.length;
     updateTotals();
     updateDisplay();
+    lastAddedCount = 0;
     scrollToBottom();
 
     var last = items[items.length - 1];
@@ -999,9 +1006,11 @@ html, body {
   function clearAll() {
     billState.items = [];
     billState.customerName = '';
+    billState.billNumber++;
+    persistSettings();
     updateTotals();
     updateDisplay();
-    setAiMessage('Naya bill shuru. Ready hain.');
+    setAiMessage('Naya bill #' + padBillNo(billState.billNumber) + ' shuru. Ready hain.');
     speak('Naya bill shuru. Ready hain.');
   }
 
@@ -1049,7 +1058,7 @@ html, body {
     var html = '';
     for (var i = 0; i < billState.items.length; i++) {
       var item = billState.items[i];
-      var cls = (i === billState.items.length - 1) ? ' highlight' : '';
+      var cls = (lastAddedCount > 0 && i >= billState.items.length - lastAddedCount) ? ' highlight' : '';
       html += '<div class="bill-item' + cls + '">' +
         '<span class="item-name">' + esc(item.name) + '</span>' +
         '<span class="item-qty">' + item.quantity + ' ' + esc(item.unit) + '</span>' +
