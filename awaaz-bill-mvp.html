@@ -955,6 +955,7 @@ html, body {
         if (result.customer_name) {
           billState.customerName = result.customer_name;
           showToast('Customer: ' + result.customer_name);
+          speak('Customer naam set kiya: ' + result.customer_name);
         }
         break;
       case 'none':
@@ -1087,6 +1088,7 @@ html, body {
       persistSettings();
       $('topBillNo').textContent = padBillNo(billState.billNumber);
       setAiMessage('Bill print ho raha hai. Naya bill ke liye mic dabayein.');
+      speak('Aapka bill print ho raha hai. Naya bill ke liye mic dabayein.');
     }, 1000);
   }
 
