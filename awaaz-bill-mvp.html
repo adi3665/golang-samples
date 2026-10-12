@@ -214,7 +214,7 @@ html, body {
   flex: 1; padding: 12px 14px; font-size: 16px;
   background: var(--bg-primary); color: var(--text-primary);
   border: 2px solid var(--border); border-radius: 10px;
-  outline: none; font-family: inherit;
+  outline: none; font-family: inherit; min-height: 48px;
 }
 .text-input-row input:focus { border-color: var(--accent); }
 .text-input-row input::placeholder { color: var(--text-secondary); }
@@ -700,10 +700,13 @@ html, body {
       stopRecording();
       if (e.error === 'not-allowed') {
         showToast('Mic permission chahiye. Browser settings mein mic allow karein.');
+        speak('Mic permission chahiye. Browser settings mein mic allow karein.');
       } else if (e.error === 'no-speech') {
         showToast('Kuch sunai nahi diya. Dobara bolein.');
+        speak('Kuch sunai nahi diya. Dobara boliye.');
       } else {
         showToast('Sunne mein dikkat aayi. Dobara try karein.');
+        speak('Sunne mein dikkat aayi. Dobara try karein.');
       }
     };
 
