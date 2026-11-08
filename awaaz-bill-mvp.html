@@ -289,6 +289,7 @@ body {
   0%, 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0.4); }
   50% { box-shadow: 0 0 0 16px rgba(231,76,60,0); }
 }
+.toast.show { opacity:1; }
 
 /* ===== Settings Panel ===== */
 .settings-overlay {
@@ -380,6 +381,7 @@ body {
 /* ===== Receipt Print Styles ===== */
 .receipt-print { display: none; }
 
+/* ── Print Styles ── */
 @media print {
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { background: white !important; color: black !important; }
@@ -583,7 +585,11 @@ const SYSTEM_PROMPT = `You are a billing assistant for an Indian kirana/grocery 
 Parse the shop owner's spoken input and extract items for a bill.
 The input may be in Hindi, English, or Hinglish.
 
-Respond ONLY with a valid JSON object. No other text, no markdown, no explanation.
+var apiKey = '';
+var isRecording = false;
+var recognition = null;
+var offlineMode = false;
+var toastTimer = null;
 
 JSON format:
 {
