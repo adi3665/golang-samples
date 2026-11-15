@@ -20,6 +20,7 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
+.hidden { display: none !important; }
 
 body {
   font-family: 'Inter', sans-serif;
@@ -119,7 +120,7 @@ body {
   animation: fadeIn 0.2s ease;
 }
 .speech-bubble.interim { color: var(--text-secondary); font-style: italic; }
-.speech-bubble.hidden { display: none; }
+.speech-bubble.interim + .bill-section { margin-top: 8px; }
 
 /* Bill Table */
 .bill-section {
@@ -341,7 +342,6 @@ body {
   justify-content: center;
   padding: 16px;
 }
-.modal-overlay.hidden { display: none; }
 .modal {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
@@ -416,7 +416,6 @@ body {
   z-index: 60;
   box-shadow: 0 8px 30px rgba(0,0,0,0.4);
 }
-.about-tooltip.hidden { display: none; }
 .about-tooltip strong { color: var(--text-primary); }
 
 /* Loading spinner on mic */
@@ -724,6 +723,9 @@ body {
       $('apiKeyModal').classList.remove('hidden');
     }
   }
+
+  window.closeSettings = closeSettings;
+  window.saveSettings = saveSettings;
 
   window.saveApiKey = function() {
     const key = $('apiKeyInput').value.trim();
