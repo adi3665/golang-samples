@@ -1,8 +1,12 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Awaaz Bill</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
-
 <style>
+html { -webkit-text-size-adjust: 100%; }
 /* Layout: full-height app with fixed header/footer and scrollable bill area */
 :root {
   --bg: #1a1a2e;
@@ -411,6 +415,7 @@ body {
   place-items: center;
   padding: 16px;
 }
+.modal-overlay[hidden] { display: none; }
 .modal-box {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -590,6 +595,7 @@ body {
   justify-content: center;
   padding: 16px;
 }
+.receipt-overlay[hidden] { display: none; }
 .receipt-scroll {
   max-height: calc(100vh - 100px);
   overflow-y: auto;
@@ -740,6 +746,8 @@ body {
   }
 }
 </style>
+</head>
+<body>
 
 <!-- API Key Modal -->
 <div id="apiModal" class="modal-overlay" hidden>
@@ -1557,3 +1565,5 @@ function init() {
 
 init();
 </script>
+</body>
+</html>
